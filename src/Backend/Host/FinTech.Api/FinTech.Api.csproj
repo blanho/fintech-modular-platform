@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FinTech.Api</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\FinTech.Infrastructure\FinTech.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\FinTech.Modules.Identity\FinTech.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Wallet\FinTech.Modules.Wallet\FinTech.Modules.Wallet.csproj" />
+    <ProjectReference Include="..\..\Modules\Ledger\FinTech.Modules.Ledger\FinTech.Modules.Ledger.csproj" />
+    <ProjectReference Include="..\..\Modules\Transaction\FinTech.Modules.Transaction\FinTech.Modules.Transaction.csproj" />
+    <ProjectReference Include="..\..\Modules\Notification\FinTech.Modules.Notification\FinTech.Modules.Notification.csproj" />
+  </ItemGroup>
+
+</Project>
