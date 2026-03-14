@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>FinTech.Modules.Transaction.Api</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Transaction.Application\FinTech.Modules.Transaction.Application.csproj"/>
+        <ProjectReference Include="..\FinTech.Modules.Transaction.Infrastructure\FinTech.Modules.Transaction.Infrastructure.csproj"/>
+    </ItemGroup>
+
+</Project>
