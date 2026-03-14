@@ -1,6 +1,6 @@
-namespace FinTech.BuildingBlocks.Domain;
-
 using MediatR;
+
+namespace FinTech.BuildingBlocks.Domain;
 
 public interface IDomainEvent : INotification
 {

@@ -1,8 +1,7 @@
-namespace FinTech.BuildingBlocks.Infrastructure.Extensions;
-
 using FinTech.BuildingBlocks.Domain.Results;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+namespace FinTech.BuildingBlocks.Infrastructure.Extensions;
 
 public static class ResultExtensions
 {
@@ -39,7 +38,8 @@ public static class ResultExtensions
             "CONFLICT" or "DUPLICATE_TRANSACTION" => new ConflictObjectResult(new { error.Code, error.Message }),
             "UNAUTHORIZED" or "INVALID_CREDENTIALS" => new UnauthorizedObjectResult(new { error.Code, error.Message }),
             "FORBIDDEN" => new ObjectResult(new { error.Code, error.Message }) { StatusCode = 403 },
-            "INSUFFICIENT_BALANCE" or "WALLET_FROZEN" or "WALLET_CLOSED" or "CURRENCY_MISMATCH" or "SAME_WALLET_TRANSFER"
+            "INSUFFICIENT_BALANCE" or "WALLET_FROZEN" or "WALLET_CLOSED" or "CURRENCY_MISMATCH"
+                or "SAME_WALLET_TRANSFER"
                 => new UnprocessableEntityObjectResult(new { error.Code, error.Message }),
             _ => new ObjectResult(new { error.Code, error.Message }) { StatusCode = 500 }
         };

@@ -1,8 +1,8 @@
-namespace FinTech.BuildingBlocks.Application.Contracts;
-
 using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.BuildingBlocks.Domain.ValueObjects;
+
+namespace FinTech.BuildingBlocks.Application.Contracts;
 
 public interface ILedgerService
 {

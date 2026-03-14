@@ -2,8 +2,6 @@ namespace FinTech.BuildingBlocks.Domain;
 
 public class DomainException : Exception
 {
-    public string Code { get; }
-
     public DomainException(string code, string message) : base(message)
     {
         Code = code;
@@ -14,4 +12,6 @@ public class DomainException : Exception
     {
         Code = code;
     }
+
+    public string Code { get; }
 }

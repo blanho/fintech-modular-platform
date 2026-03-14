@@ -2,9 +2,8 @@ namespace FinTech.BuildingBlocks.Domain;
 
 public abstract class Entity<TId> where TId : notnull
 {
-    public TId Id { get; protected set; } = default!;
-
     private readonly List<IDomainEvent> _domainEvents = new();
+    public TId Id { get; protected set; } = default!;
 
     public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
@@ -33,7 +32,10 @@ public abstract class Entity<TId> where TId : notnull
         return EqualityComparer<TId>.Default.Equals(Id, other.Id);
     }
 
-    public override int GetHashCode() => Id?.GetHashCode() ?? 0;
+    public override int GetHashCode()
+    {
+        return Id?.GetHashCode() ?? 0;
+    }
 
     public static bool operator ==(Entity<TId>? left, Entity<TId>? right)
     {
@@ -42,5 +44,8 @@ public abstract class Entity<TId> where TId : notnull
         return left.Equals(right);
     }
 
-    public static bool operator !=(Entity<TId>? left, Entity<TId>? right) => !(left == right);
+    public static bool operator !=(Entity<TId>? left, Entity<TId>? right)
+    {
+        return !(left == right);
+    }
 }

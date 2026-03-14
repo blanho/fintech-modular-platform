@@ -1,9 +1,7 @@
-namespace FinTech.BuildingBlocks.Observability;
-
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
+
+namespace FinTech.BuildingBlocks.Observability;
 
 public static class ObservabilityExtensions
 {
@@ -24,12 +22,11 @@ public static class ObservabilityExtensions
             options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
             {
                 diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? string.Empty);
-                diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty);
+                diagnosticContext.Set("UserAgent",
+                    httpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty);
 
                 if (httpContext.Items.TryGetValue("CorrelationId", out var correlationId))
-                {
                     diagnosticContext.Set("CorrelationId", correlationId?.ToString() ?? string.Empty);
-                }
             };
         });
 

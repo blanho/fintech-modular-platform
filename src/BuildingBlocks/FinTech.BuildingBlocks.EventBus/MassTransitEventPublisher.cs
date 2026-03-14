@@ -1,12 +1,12 @@
-namespace FinTech.BuildingBlocks.EventBus;
-
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
+namespace FinTech.BuildingBlocks.EventBus;
+
 public sealed class MassTransitEventPublisher : IEventPublisher
 {
-    private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<MassTransitEventPublisher> _logger;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public MassTransitEventPublisher(
         IPublishEndpoint publishEndpoint,

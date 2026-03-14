@@ -2,8 +2,6 @@ namespace FinTech.BuildingBlocks.Domain.Results;
 
 public class Result<T> : Result
 {
-    public T? Value { get; }
-
     private Result(T value) : base(true, Error.None)
     {
         Value = value;
@@ -14,11 +12,22 @@ public class Result<T> : Result
         Value = default;
     }
 
-    public static Result<T> Success(T value) => new(value);
+    public T? Value { get; }
 
-    public new static Result<T> Failure(Error error) => new(error);
+    public static Result<T> Success(T value)
+    {
+        return new Result<T>(value);
+    }
 
-    public static implicit operator Result<T>(T value) => Success(value);
+    public new static Result<T> Failure(Error error)
+    {
+        return new Result<T>(error);
+    }
+
+    public static implicit operator Result<T>(T value)
+    {
+        return Success(value);
+    }
 
     public TResult Match<TResult>(Func<T, TResult> onSuccess, Func<Error, TResult> onFailure)
     {

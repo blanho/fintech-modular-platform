@@ -1,7 +1,7 @@
-namespace FinTech.BuildingBlocks.Application.Contracts;
-
 using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
+
+namespace FinTech.BuildingBlocks.Application.Contracts;
 
 public interface IWalletService
 {

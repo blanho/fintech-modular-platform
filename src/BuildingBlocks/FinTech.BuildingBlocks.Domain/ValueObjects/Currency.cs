@@ -1,6 +1,6 @@
-namespace FinTech.BuildingBlocks.Domain.ValueObjects;
-
 using FinTech.BuildingBlocks.Domain.Results;
+
+namespace FinTech.BuildingBlocks.Domain.ValueObjects;
 
 public sealed record Currency
 {
@@ -9,9 +9,21 @@ public sealed record Currency
         "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "SGD"
     };
 
+    private Currency(string code)
+    {
+        Code = code;
+    }
+
     public string Code { get; }
 
-    private Currency(string code) => Code = code;
+    public static Currency USD => new("USD");
+    public static Currency EUR => new("EUR");
+    public static Currency GBP => new("GBP");
+    public static Currency JPY => new("JPY");
+    public static Currency CHF => new("CHF");
+    public static Currency CAD => new("CAD");
+    public static Currency AUD => new("AUD");
+    public static Currency SGD => new("SGD");
 
     public static Result<Currency> FromCode(string code)
     {
@@ -25,21 +37,19 @@ public sealed record Currency
 
         if (!SupportedCurrencies.Contains(normalized))
             return Result<Currency>.Failure(
-                Error.Validation($"Currency '{code}' is not supported. Supported: {string.Join(", ", SupportedCurrencies)}"));
+                Error.Validation(
+                    $"Currency '{code}' is not supported. Supported: {string.Join(", ", SupportedCurrencies)}"));
 
         return Result<Currency>.Success(new Currency(normalized));
     }
 
-    public static Currency USD => new("USD");
-    public static Currency EUR => new("EUR");
-    public static Currency GBP => new("GBP");
-    public static Currency JPY => new("JPY");
-    public static Currency CHF => new("CHF");
-    public static Currency CAD => new("CAD");
-    public static Currency AUD => new("AUD");
-    public static Currency SGD => new("SGD");
+    public static IReadOnlySet<string> GetSupportedCurrencies()
+    {
+        return SupportedCurrencies;
+    }
 
-    public static IReadOnlySet<string> GetSupportedCurrencies() => SupportedCurrencies;
-
-    public override string ToString() => Code;
+    public override string ToString()
+    {
+        return Code;
+    }
 }

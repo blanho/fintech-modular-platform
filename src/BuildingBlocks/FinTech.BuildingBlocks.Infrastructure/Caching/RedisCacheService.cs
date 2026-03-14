@@ -1,7 +1,7 @@
-namespace FinTech.BuildingBlocks.Infrastructure.Caching;
-
-using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace FinTech.BuildingBlocks.Infrastructure.Caching;
 
 public sealed class RedisCacheService : ICacheService
 {

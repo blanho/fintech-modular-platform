@@ -1,8 +1,8 @@
-namespace FinTech.BuildingBlocks.Application.Behaviors;
-
+using System.Diagnostics;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
+
+namespace FinTech.BuildingBlocks.Application.Behaviors;
 
 public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>

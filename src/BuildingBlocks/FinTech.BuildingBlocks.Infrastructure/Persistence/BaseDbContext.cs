@@ -1,8 +1,8 @@
-namespace FinTech.BuildingBlocks.Infrastructure.Persistence;
-
 using FinTech.BuildingBlocks.Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+
+namespace FinTech.BuildingBlocks.Infrastructure.Persistence;
 
 public abstract class BaseDbContext : DbContext
 {
@@ -33,19 +33,13 @@ public abstract class BaseDbContext : DbContext
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
-            {
                 if (entry.Entity.GetType().GetProperty("CreatedAt") is { } createdAtProp
                     && createdAtProp.PropertyType == typeof(DateTime))
-                {
                     createdAtProp.SetValue(entry.Entity, DateTime.UtcNow);
-                }
-            }
 
             if (entry.Entity.GetType().GetProperty("UpdatedAt") is { } updatedAtProp
                 && updatedAtProp.PropertyType == typeof(DateTime?))
-            {
                 updatedAtProp.SetValue(entry.Entity, DateTime.UtcNow);
-            }
         }
     }
 
@@ -62,9 +56,6 @@ public abstract class BaseDbContext : DbContext
 
         domainEntities.ForEach(e => e.ClearDomainEvents());
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await _publisher.Publish(domainEvent, cancellationToken);
-        }
+        foreach (var domainEvent in domainEvents) await _publisher.Publish(domainEvent, cancellationToken);
     }
 }

@@ -1,18 +1,24 @@
-namespace FinTech.BuildingBlocks.Domain.ValueObjects;
-
 using FinTech.BuildingBlocks.Domain.Results;
+
+namespace FinTech.BuildingBlocks.Domain.ValueObjects;
 
 public sealed record Money
 {
-    public decimal Amount { get; }
-
-    public Currency Currency { get; }
-
     private Money(decimal amount, Currency currency)
     {
         Amount = decimal.Round(amount, 4, MidpointRounding.ToEven);
         Currency = currency;
     }
+
+    public decimal Amount { get; }
+
+    public Currency Currency { get; }
+
+    public bool IsNegative => Amount < 0;
+
+    public bool IsPositive => Amount > 0;
+
+    public bool IsZero => Amount == 0;
 
     public static Result<Money> Create(decimal amount, string currencyCode)
     {
@@ -28,7 +34,10 @@ public sealed record Money
         return Result<Money>.Success(new Money(amount, currency));
     }
 
-    public static Money Zero(Currency currency) => new(0m, currency);
+    public static Money Zero(Currency currency)
+    {
+        return new Money(0m, currency);
+    }
 
     public Money Add(Money other)
     {
@@ -42,15 +51,15 @@ public sealed record Money
         return new Money(Amount - other.Amount, Currency);
     }
 
-    public Money Negate() => new(-Amount, Currency);
+    public Money Negate()
+    {
+        return new Money(-Amount, Currency);
+    }
 
-    public Money Abs() => new(Math.Abs(Amount), Currency);
-
-    public bool IsNegative => Amount < 0;
-
-    public bool IsPositive => Amount > 0;
-
-    public bool IsZero => Amount == 0;
+    public Money Abs()
+    {
+        return new Money(Math.Abs(Amount), Currency);
+    }
 
     public bool IsGreaterThan(Money other)
     {
@@ -83,5 +92,8 @@ public sealed record Money
                 $"Cannot operate on different currencies: {Currency} and {other.Currency}");
     }
 
-    public override string ToString() => $"{Amount:F4} {Currency}";
+    public override string ToString()
+    {
+        return $"{Amount:F4} {Currency}";
+    }
 }

@@ -6,13 +6,17 @@ public sealed record UserCreatedIntegrationEvent(
     string? FirstName,
     string? LastName) : IntegrationEventBase;
 
+public sealed record UserPasswordChangedIntegrationEvent(
+    Guid UserId) : IntegrationEventBase;
+
 public sealed record TransactionCompletedIntegrationEvent(
     Guid TransactionId,
     Guid SourceWalletId,
     Guid? DestinationWalletId,
     decimal Amount,
     string Currency,
-    string TransactionType) : IntegrationEventBase;
+    string TransactionType,
+    DateTime CompletedAt) : IntegrationEventBase;
 
 public sealed record TransactionFailedIntegrationEvent(
     Guid TransactionId,
@@ -29,12 +33,15 @@ public sealed record WalletCreatedIntegrationEvent(
 
 public sealed record BalanceChangedIntegrationEvent(
     Guid WalletId,
+    decimal PreviousBalance,
     decimal NewBalance,
+    decimal ChangeAmount,
+    string ChangeType,
     string Currency) : IntegrationEventBase;
 
 public sealed record SendEmailIntegrationEvent(
     Guid UserId,
-    string To,
+    string ToEmail,
     string Subject,
     string Body) : IntegrationEventBase;
 
