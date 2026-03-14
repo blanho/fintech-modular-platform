@@ -1,26 +1,31 @@
+using System.Text.Json;
 using FinTech.BuildingBlocks.Domain;
-using MediatR;
+using FinTech.BuildingBlocks.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinTech.BuildingBlocks.Infrastructure.Persistence;
 
 public abstract class BaseDbContext : DbContext
 {
-    private readonly IPublisher _publisher;
-
-    protected BaseDbContext(DbContextOptions options, IPublisher publisher)
+    protected BaseDbContext(DbContextOptions options)
         : base(options)
     {
-        _publisher = publisher;
+    }
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         SetTimestamps();
+        ConvertDomainEventsToOutboxMessages();
 
         var result = await base.SaveChangesAsync(cancellationToken);
-
-        await DispatchDomainEventsAsync(cancellationToken);
 
         return result;
     }
@@ -43,7 +48,7 @@ public abstract class BaseDbContext : DbContext
         }
     }
 
-    private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken)
+    private void ConvertDomainEventsToOutboxMessages()
     {
         var domainEntities = ChangeTracker.Entries<Entity<Guid>>()
             .Where(e => e.Entity.DomainEvents.Any())
@@ -56,6 +61,12 @@ public abstract class BaseDbContext : DbContext
 
         domainEntities.ForEach(e => e.ClearDomainEvents());
 
-        foreach (var domainEvent in domainEvents) await _publisher.Publish(domainEvent, cancellationToken);
+        foreach (var domainEvent in domainEvents)
+        {
+            var type = domainEvent.GetType().AssemblyQualifiedName!;
+            var payload = JsonSerializer.Serialize(domainEvent, domainEvent.GetType());
+            var outboxMessage = OutboxMessage.Create(type, payload);
+            OutboxMessages.Add(outboxMessage);
+        }
     }
 }
