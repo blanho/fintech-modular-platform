@@ -1,20 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RootNamespace>FinTech.Modules.Transaction.Application</RootNamespace>
     </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="FluentValidation" Version="11.9.0"/>
     </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\FinTech.Modules.Transaction.Domain\FinTech.Modules.Transaction.Domain.csproj"/>
         <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.Application\FinTech.BuildingBlocks.Application.csproj"/>
         <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.EventBus\FinTech.BuildingBlocks.EventBus.csproj"/>
     </ItemGroup>
-
 </Project>

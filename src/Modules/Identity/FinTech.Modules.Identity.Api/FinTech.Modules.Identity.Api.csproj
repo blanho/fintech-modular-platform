@@ -1,19 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RootNamespace>FinTech.Modules.Identity.Api</RootNamespace>
     </PropertyGroup>
-
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\FinTech.Modules.Identity.Application\FinTech.Modules.Identity.Application.csproj"/>
         <ProjectReference Include="..\FinTech.Modules.Identity.Infrastructure\FinTech.Modules.Identity.Infrastructure.csproj"/>
     </ItemGroup>
-
 </Project>

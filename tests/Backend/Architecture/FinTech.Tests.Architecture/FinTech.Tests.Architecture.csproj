@@ -1,23 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+        <PackageReference Include="FluentAssertions" Version="6.12.0"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="NetArchTest.Rules" Version="1.3.2"/>
         <PackageReference Include="xunit" Version="2.5.3"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
     </ItemGroup>
-
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\BuildingBlocks\FinTech.BuildingBlocks.Domain\FinTech.BuildingBlocks.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\BuildingBlocks\FinTech.BuildingBlocks.Application\FinTech.BuildingBlocks.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\BuildingBlocks\FinTech.BuildingBlocks.Infrastructure\FinTech.BuildingBlocks.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\BuildingBlocks\FinTech.BuildingBlocks.EventBus\FinTech.BuildingBlocks.EventBus.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Identity\FinTech.Modules.Identity.Domain\FinTech.Modules.Identity.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Identity\FinTech.Modules.Identity.Application\FinTech.Modules.Identity.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Identity\FinTech.Modules.Identity.Infrastructure\FinTech.Modules.Identity.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Identity\FinTech.Modules.Identity.Api\FinTech.Modules.Identity.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Wallet\FinTech.Modules.Wallet.Domain\FinTech.Modules.Wallet.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Wallet\FinTech.Modules.Wallet.Application\FinTech.Modules.Wallet.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Wallet\FinTech.Modules.Wallet.Infrastructure\FinTech.Modules.Wallet.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Wallet\FinTech.Modules.Wallet.Api\FinTech.Modules.Wallet.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Ledger\FinTech.Modules.Ledger.Domain\FinTech.Modules.Ledger.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Ledger\FinTech.Modules.Ledger.Application\FinTech.Modules.Ledger.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Ledger\FinTech.Modules.Ledger.Infrastructure\FinTech.Modules.Ledger.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Ledger\FinTech.Modules.Ledger.Api\FinTech.Modules.Ledger.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Transaction\FinTech.Modules.Transaction.Domain\FinTech.Modules.Transaction.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Transaction\FinTech.Modules.Transaction.Application\FinTech.Modules.Transaction.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Transaction\FinTech.Modules.Transaction.Infrastructure\FinTech.Modules.Transaction.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Transaction\FinTech.Modules.Transaction.Api\FinTech.Modules.Transaction.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Domain\FinTech.Modules.Notification.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Application\FinTech.Modules.Notification.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Infrastructure\FinTech.Modules.Notification.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj"/>
+    </ItemGroup>
     <ItemGroup>
         <Using Include="Xunit"/>
     </ItemGroup>
-
 </Project>
