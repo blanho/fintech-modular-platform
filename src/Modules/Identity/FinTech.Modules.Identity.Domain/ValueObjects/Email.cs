@@ -1,12 +1,15 @@
-﻿namespace FinTech.Modules.Identity.Domain.ValueObjects;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 
-using FinTech.BuildingBlocks.Domain.Results;
+namespace FinTech.Modules.Identity.Domain.ValueObjects;
 
 public sealed record Email
 {
-    public string Value { get; }
+    private Email(string value)
+    {
+        Value = value;
+    }
 
-    private Email(string value) => Value = value;
+    public string Value { get; }
 
     public static Result<Email> Create(string email)
     {
@@ -40,11 +43,14 @@ public sealed record Email
         if (dotIndex >= email.Length - 1)
             return false;
 
-if (email.Contains(".."))
+        if (email.Contains(".."))
             return false;
 
         return true;
     }
 
-    public override string ToString() => Value;
+    public override string ToString()
+    {
+        return Value;
+    }
 }

@@ -1,14 +1,18 @@
-﻿namespace FinTech.Modules.Identity.Domain.Entities;
-
-using FinTech.BuildingBlocks.Domain;
+﻿using FinTech.BuildingBlocks.Domain;
 using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.Modules.Identity.Domain.Enums;
-using FinTech.Modules.Identity.Domain.ValueObjects;
 using FinTech.Modules.Identity.Domain.Events;
+using FinTech.Modules.Identity.Domain.ValueObjects;
+
+namespace FinTech.Modules.Identity.Domain.Entities;
 
 public sealed class User : AggregateRoot<UserId>
 {
+    private User()
+    {
+    }
+
     public Email Email { get; private set; } = null!;
     public PasswordHash PasswordHash { get; private set; } = null!;
     public UserStatus Status { get; private set; }
@@ -16,9 +20,11 @@ public sealed class User : AggregateRoot<UserId>
     public string? LastName { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
 
-    private User() { }
+    public string FullName => $"{FirstName} {LastName}".Trim();
 
-public static Result<User> Create(
+    public bool IsActive => Status == UserStatus.Active;
+
+    public static Result<User> Create(
         Email email,
         PasswordHash passwordHash,
         string? firstName = null,
@@ -40,7 +46,7 @@ public static Result<User> Create(
         return Result<User>.Success(user);
     }
 
-public Result UpdateProfile(string? firstName, string? lastName)
+    public Result UpdateProfile(string? firstName, string? lastName)
     {
         FirstName = firstName?.Trim();
         LastName = lastName?.Trim();
@@ -49,7 +55,7 @@ public Result UpdateProfile(string? firstName, string? lastName)
         return Result.Success();
     }
 
-public Result ChangePassword(PasswordHash newPasswordHash)
+    public Result ChangePassword(PasswordHash newPasswordHash)
     {
         PasswordHash = newPasswordHash;
         UpdatedAt = DateTime.UtcNow;
@@ -59,12 +65,12 @@ public Result ChangePassword(PasswordHash newPasswordHash)
         return Result.Success();
     }
 
-public void RecordLogin()
+    public void RecordLogin()
     {
         LastLoginAt = DateTime.UtcNow;
     }
 
-public Result Deactivate()
+    public Result Deactivate()
     {
         if (Status == UserStatus.Deactivated)
             return Result.Failure(Error.Conflict("User is already deactivated"));
@@ -77,7 +83,7 @@ public Result Deactivate()
         return Result.Success();
     }
 
-public Result Activate()
+    public Result Activate()
     {
         if (Status == UserStatus.Active)
             return Result.Failure(Error.Conflict("User is already active"));
@@ -87,8 +93,4 @@ public Result Activate()
 
         return Result.Success();
     }
-
-public string FullName => $"{FirstName} {LastName}".Trim();
-
-public bool IsActive => Status == UserStatus.Active;
 }

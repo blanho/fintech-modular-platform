@@ -1,9 +1,9 @@
-﻿namespace FinTech.Modules.Identity.Application.Services;
-
-using FinTech.Modules.Identity.Application.Interfaces;
-using FinTech.BuildingBlocks.Application.Contracts;
+﻿using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
+using FinTech.Modules.Identity.Application.Interfaces;
+
+namespace FinTech.Modules.Identity.Application.Services;
 
 public class IdentityService : IIdentityService
 {

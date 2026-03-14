@@ -1,17 +1,16 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Login;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.Modules.Identity.Application.Interfaces;
-using FinTech.Modules.Identity.Domain.Entities;
 using FinTech.Modules.Identity.Domain.Enums;
 using MediatR;
 
+namespace FinTech.Modules.Identity.Application.Commands.Login;
+
 public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserRepository _userRepository;
 
     public LoginCommandHandler(
         IUserRepository userRepository,
@@ -29,28 +28,27 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<L
         LoginCommand request,
         CancellationToken cancellationToken)
     {
-
         var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
         if (user == null)
             return Result<LoginResponse>.Failure(Error.InvalidCredentials());
 
-if (!_passwordHasher.Verify(request.Password, user.PasswordHash.Value))
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash.Value))
             return Result<LoginResponse>.Failure(Error.InvalidCredentials());
 
-if (user.Status != UserStatus.Active)
+        if (user.Status != UserStatus.Active)
             return Result<LoginResponse>.Failure(Error.Forbidden("User account is not active"));
 
-var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
         var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
 
-var refreshToken = RefreshToken.Create(
+        var refreshToken = Domain.Entities.RefreshToken.Create(
             user.Id,
             refreshTokenValue,
             _jwtTokenGenerator.RefreshTokenValidity);
 
         await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
 
-user.RecordLogin();
+        user.RecordLogin();
         _userRepository.Update(user);
 
         await _refreshTokenRepository.SaveChangesAsync(cancellationToken);

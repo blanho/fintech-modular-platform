@@ -1,10 +1,10 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Persistence.Configurations;
-
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.Modules.Identity.Domain.Entities;
 using FinTech.Modules.Identity.Domain.ValueObjects;
-using FinTech.BuildingBlocks.Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace FinTech.Modules.Identity.Infrastructure.Persistence.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
@@ -60,6 +60,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.UpdatedAt)
             .HasColumnName("updated_at");
 
-builder.Ignore(u => u.DomainEvents);
+        builder.Ignore(u => u.DomainEvents);
     }
 }

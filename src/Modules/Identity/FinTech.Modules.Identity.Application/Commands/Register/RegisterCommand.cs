@@ -1,7 +1,7 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Register;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using MediatR;
+
+namespace FinTech.Modules.Identity.Application.Commands.Register;
 
 public sealed record RegisterCommand(
     string Email,

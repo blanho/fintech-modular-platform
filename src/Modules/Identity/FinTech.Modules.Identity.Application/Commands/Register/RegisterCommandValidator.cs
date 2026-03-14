@@ -1,6 +1,6 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Register;
+﻿using FluentValidation;
 
-using FluentValidation;
+namespace FinTech.Modules.Identity.Application.Commands.Register;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {

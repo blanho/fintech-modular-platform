@@ -1,7 +1,7 @@
-﻿namespace FinTech.Modules.Identity.Application.Interfaces;
-
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.Modules.Identity.Domain.Entities;
-using FinTech.BuildingBlocks.Domain.Primitives;
+
+namespace FinTech.Modules.Identity.Application.Interfaces;
 
 public interface IRefreshTokenRepository
 {

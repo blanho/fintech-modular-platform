@@ -1,6 +1,6 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Services;
+﻿using FinTech.Modules.Identity.Application.Interfaces;
 
-using FinTech.Modules.Identity.Application.Interfaces;
+namespace FinTech.Modules.Identity.Infrastructure.Services;
 
 public sealed class PasswordHasher : IPasswordHasher
 {

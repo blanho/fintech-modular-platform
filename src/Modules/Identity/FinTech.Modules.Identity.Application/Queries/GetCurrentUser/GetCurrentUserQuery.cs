@@ -1,8 +1,8 @@
-﻿namespace FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
-
-using FinTech.BuildingBlocks.Domain.Primitives;
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
 using MediatR;
+
+namespace FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
 
 public sealed record GetCurrentUserQuery(
     UserId UserId

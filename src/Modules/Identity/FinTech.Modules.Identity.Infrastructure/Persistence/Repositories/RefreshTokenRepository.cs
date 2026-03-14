@@ -1,9 +1,9 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
-
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.Modules.Identity.Application.Interfaces;
 using FinTech.Modules.Identity.Domain.Entities;
-using FinTech.BuildingBlocks.Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
+
+namespace FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
 
 public class RefreshTokenRepository : IRefreshTokenRepository
 {
@@ -20,7 +20,8 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             .FirstOrDefaultAsync(t => t.Token == token, ct);
     }
 
-    public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserAsync(UserId userId, CancellationToken ct = default)
+    public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserAsync(UserId userId,
+        CancellationToken ct = default)
     {
         return await _context.RefreshTokens
             .Where(t => t.UserId == userId && t.IsActive)
@@ -44,10 +45,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             .Where(t => t.UserId == userId && t.RevokedAt == null && t.ExpiresAt > DateTime.UtcNow)
             .ToListAsync(ct);
 
-        foreach (var token in activeTokens)
-        {
-            token.Revoke();
-        }
+        foreach (var token in activeTokens) token.Revoke();
     }
 
     public async Task SaveChangesAsync(CancellationToken ct = default)

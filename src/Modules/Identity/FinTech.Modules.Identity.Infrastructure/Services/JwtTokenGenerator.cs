@@ -1,6 +1,4 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Services;
-
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,29 +7,30 @@ using FinTech.Modules.Identity.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
+namespace FinTech.Modules.Identity.Infrastructure.Services;
+
 public sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly IConfiguration _configuration;
-    private readonly TimeSpan _refreshTokenValidity;
 
     public JwtTokenGenerator(IConfiguration configuration)
     {
         _configuration = configuration;
-        _refreshTokenValidity = TimeSpan.FromDays(
-            configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays", 7));
+        RefreshTokenValidity = TimeSpan.FromDays(
+            configuration.GetValue("Jwt:RefreshTokenExpirationDays", 7));
     }
 
-    public TimeSpan RefreshTokenValidity => _refreshTokenValidity;
+    public TimeSpan RefreshTokenValidity { get; }
 
     public string GenerateAccessToken(User user)
     {
         var secret = _configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("JWT secret is not configured");
+                     ?? throw new InvalidOperationException("JWT secret is not configured");
         var issuer = _configuration["Jwt:Issuer"]
-            ?? throw new InvalidOperationException("JWT issuer is not configured");
+                     ?? throw new InvalidOperationException("JWT issuer is not configured");
         var audience = _configuration["Jwt:Audience"]
-            ?? throw new InvalidOperationException("JWT audience is not configured");
-        var expirationMinutes = _configuration.GetValue<int>("Jwt:ExpirationMinutes", 60);
+                       ?? throw new InvalidOperationException("JWT audience is not configured");
+        var expirationMinutes = _configuration.GetValue("Jwt:ExpirationMinutes", 60);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -42,13 +41,13 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
             new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.Value.ToString()),
-            new Claim(ClaimTypes.Email, user.Email.Value),
+            new Claim(ClaimTypes.Email, user.Email.Value)
         }.Concat(GetOptionalClaims(user)).ToArray();
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
+            issuer,
+            audience,
+            claims,
             expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
             signingCredentials: credentials);
 

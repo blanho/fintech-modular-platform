@@ -1,9 +1,9 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Persistence.Configurations;
-
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.Modules.Identity.Domain.Entities;
-using FinTech.BuildingBlocks.Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace FinTech.Modules.Identity.Infrastructure.Persistence.Configurations;
 
 public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {

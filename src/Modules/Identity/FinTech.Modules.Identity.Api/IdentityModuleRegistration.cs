@@ -1,15 +1,15 @@
-namespace FinTech.Modules.Identity.Api;
-
+using FinTech.BuildingBlocks.Application.Contracts;
+using FinTech.Modules.Identity.Application.Interfaces;
+using FinTech.Modules.Identity.Application.Services;
+using FinTech.Modules.Identity.Infrastructure.Persistence;
+using FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
+using FinTech.Modules.Identity.Infrastructure.Services;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using FinTech.Modules.Identity.Infrastructure.Persistence;
-using FinTech.Modules.Identity.Application.Interfaces;
-using FinTech.Modules.Identity.Infrastructure.Services;
-using FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
-using FinTech.BuildingBlocks.Application.Contracts;
-using FinTech.Modules.Identity.Application.Services;
-using FluentValidation;
+
+namespace FinTech.Modules.Identity.Api;
 
 public static class IdentityModuleRegistration
 {

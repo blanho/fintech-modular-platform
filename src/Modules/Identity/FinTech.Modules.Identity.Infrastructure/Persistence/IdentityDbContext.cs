@@ -1,8 +1,8 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Persistence;
-
-using FinTech.Modules.Identity.Domain.Entities;
+﻿using FinTech.Modules.Identity.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+
+namespace FinTech.Modules.Identity.Infrastructure.Persistence;
 
 public class IdentityDbContext : DbContext
 {
@@ -25,28 +25,23 @@ public class IdentityDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-
         var entries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         var now = DateTime.UtcNow;
 
         foreach (var entry in entries)
-        {
             if (entry.State == EntityState.Added)
             {
                 var createdAtProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "CreatedAt");
                 if (createdAtProp != null && (createdAtProp.CurrentValue == null ||
-                    (createdAtProp.CurrentValue is DateTime dt && dt == default)))
-                {
+                                              (createdAtProp.CurrentValue is DateTime dt && dt == default)))
                     createdAtProp.CurrentValue = now;
-                }
             }
-        }
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
-await DispatchDomainEventsAsync(cancellationToken);
+        await DispatchDomainEventsAsync(cancellationToken);
 
         return result;
     }
@@ -64,9 +59,6 @@ await DispatchDomainEventsAsync(cancellationToken);
 
         domainEntities.ForEach(e => e.ClearDomainEvents());
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await _mediator.Publish(domainEvent, cancellationToken);
-        }
+        foreach (var domainEvent in domainEvents) await _mediator.Publish(domainEvent, cancellationToken);
     }
 }

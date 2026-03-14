@@ -1,14 +1,14 @@
-﻿namespace FinTech.Modules.Identity.Api.Controllers;
-
+﻿using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Identity.Api.Requests;
 using FinTech.Modules.Identity.Application.Commands.Login;
 using FinTech.Modules.Identity.Application.Commands.RefreshToken;
 using FinTech.Modules.Identity.Application.Commands.Register;
-using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+namespace FinTech.Modules.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
@@ -21,7 +21,7 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
-[HttpPost("register")]
+    [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
         return result.ToCreatedResult("api/v1/users/me");
     }
 
-[HttpPost("login")]
+    [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
         return result.ToActionResult();
     }
 
-[HttpPost("refresh")]
+    [HttpPost("refresh")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

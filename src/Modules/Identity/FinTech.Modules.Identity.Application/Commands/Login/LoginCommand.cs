@@ -1,7 +1,7 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Login;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using MediatR;
+
+namespace FinTech.Modules.Identity.Application.Commands.Login;
 
 public sealed record LoginCommand(
     string Email,

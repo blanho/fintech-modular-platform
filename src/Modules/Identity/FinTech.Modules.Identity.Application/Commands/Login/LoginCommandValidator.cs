@@ -1,6 +1,6 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Login;
+﻿using FluentValidation;
 
-using FluentValidation;
+namespace FinTech.Modules.Identity.Application.Commands.Login;
 
 public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
 {

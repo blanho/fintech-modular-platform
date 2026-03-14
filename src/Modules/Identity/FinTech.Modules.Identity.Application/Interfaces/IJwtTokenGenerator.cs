@@ -1,13 +1,12 @@
-﻿namespace FinTech.Modules.Identity.Application.Interfaces;
+﻿using FinTech.Modules.Identity.Domain.Entities;
 
-using FinTech.Modules.Identity.Domain.Entities;
+namespace FinTech.Modules.Identity.Application.Interfaces;
 
 public interface IJwtTokenGenerator
 {
+    TimeSpan RefreshTokenValidity { get; }
 
-string GenerateAccessToken(User user);
+    string GenerateAccessToken(User user);
 
-string GenerateRefreshToken();
-
-TimeSpan RefreshTokenValidity { get; }
+    string GenerateRefreshToken();
 }

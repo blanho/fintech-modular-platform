@@ -1,9 +1,9 @@
-﻿namespace FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
-
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.Modules.Identity.Application.Interfaces;
 using FinTech.Modules.Identity.Domain.Entities;
-using FinTech.BuildingBlocks.Domain.Primitives;
 using Microsoft.EntityFrameworkCore;
+
+namespace FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
 
 public class UserRepository : IUserRepository
 {

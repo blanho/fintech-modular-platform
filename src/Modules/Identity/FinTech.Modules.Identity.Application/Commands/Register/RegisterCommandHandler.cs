@@ -1,6 +1,4 @@
-﻿namespace FinTech.Modules.Identity.Application.Commands.Register;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.BuildingBlocks.EventBus;
 using FinTech.BuildingBlocks.EventBus.Events;
 using FinTech.Modules.Identity.Application.Interfaces;
@@ -9,12 +7,14 @@ using FinTech.Modules.Identity.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+namespace FinTech.Modules.Identity.Application.Commands.Register;
+
 public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<RegisterCommandHandler> _logger;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IUserRepository _userRepository;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
@@ -32,18 +32,17 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
-
         if (await _userRepository.EmailExistsAsync(request.Email, cancellationToken))
             return Result<RegisterResponse>.Failure(Error.Conflict("Email already registered"));
 
-var emailResult = Email.Create(request.Email);
+        var emailResult = Email.Create(request.Email);
         if (emailResult.IsFailure)
             return Result<RegisterResponse>.Failure(emailResult.Error);
 
-var hashedPassword = _passwordHasher.Hash(request.Password);
+        var hashedPassword = _passwordHasher.Hash(request.Password);
         var passwordHash = PasswordHash.Create(hashedPassword);
 
-var userResult = User.Create(
+        var userResult = User.Create(
             emailResult.Value!,
             passwordHash,
             request.FirstName,
@@ -54,10 +53,10 @@ var userResult = User.Create(
 
         var user = userResult.Value!;
 
-await _userRepository.AddAsync(user, cancellationToken);
+        await _userRepository.AddAsync(user, cancellationToken);
         await _userRepository.SaveChangesAsync(cancellationToken);
 
-try
+        try
         {
             var integrationEvent = new UserCreatedIntegrationEvent(
                 user.Id.Value,
@@ -73,7 +72,6 @@ try
         }
         catch (Exception ex)
         {
-
             _logger.LogWarning(
                 ex,
                 "Failed to publish integration event for user {UserId}",

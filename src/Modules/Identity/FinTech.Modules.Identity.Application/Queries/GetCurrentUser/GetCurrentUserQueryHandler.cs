@@ -1,8 +1,8 @@
-﻿namespace FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.Modules.Identity.Application.Interfaces;
 using MediatR;
+
+namespace FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
 
 public sealed class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserResponse>>
 {

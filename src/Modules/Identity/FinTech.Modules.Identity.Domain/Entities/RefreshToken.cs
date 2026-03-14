@@ -1,9 +1,13 @@
-﻿namespace FinTech.Modules.Identity.Domain.Entities;
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 
-using FinTech.BuildingBlocks.Domain.Primitives;
+namespace FinTech.Modules.Identity.Domain.Entities;
 
 public sealed class RefreshToken
 {
+    private RefreshToken()
+    {
+    }
+
     public Guid Id { get; private set; }
     public UserId UserId { get; private set; }
     public string Token { get; private set; } = null!;
@@ -12,9 +16,13 @@ public sealed class RefreshToken
     public DateTime? RevokedAt { get; private set; }
     public string? ReplacedByToken { get; private set; }
 
-    private RefreshToken() { }
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
 
-public static RefreshToken Create(UserId userId, string token, TimeSpan validity)
+    public bool IsRevoked => RevokedAt != null;
+
+    public bool IsActive => !IsExpired && !IsRevoked;
+
+    public static RefreshToken Create(UserId userId, string token, TimeSpan validity)
     {
         return new RefreshToken
         {
@@ -26,13 +34,7 @@ public static RefreshToken Create(UserId userId, string token, TimeSpan validity
         };
     }
 
-public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
-
-public bool IsRevoked => RevokedAt != null;
-
-public bool IsActive => !IsExpired && !IsRevoked;
-
-public void Revoke(string? replacedByToken = null)
+    public void Revoke(string? replacedByToken = null)
     {
         RevokedAt = DateTime.UtcNow;
         ReplacedByToken = replacedByToken;

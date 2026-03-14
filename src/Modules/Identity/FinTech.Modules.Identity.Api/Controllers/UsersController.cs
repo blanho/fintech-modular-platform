@@ -1,14 +1,14 @@
-﻿namespace FinTech.Modules.Identity.Api.Controllers;
-
+﻿using System.Security.Claims;
+using FinTech.BuildingBlocks.Domain.Primitives;
+using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Identity.Api.Requests;
 using FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
-using FinTech.BuildingBlocks.Infrastructure.Extensions;
-using FinTech.BuildingBlocks.Domain.Primitives;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+
+namespace FinTech.Modules.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/users")]
@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
         _mediator = mediator;
     }
 
-[HttpGet("me")]
+    [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetCurrentUser(CancellationToken ct)
@@ -30,13 +30,11 @@ public class UsersController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userIdGuid))
-        {
             return Unauthorized(new
             {
                 success = false,
                 error = new { code = "UNAUTHORIZED", message = "Invalid token" }
             });
-        }
 
         var userId = new UserId(userIdGuid);
         var query = new GetCurrentUserQuery(userId);
@@ -46,7 +44,7 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-[HttpPatch("me")]
+    [HttpPatch("me")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -54,7 +52,6 @@ public class UsersController : ControllerBase
         [FromBody] UpdateProfileRequest request,
         CancellationToken ct)
     {
-
         return Task.FromResult<IActionResult>(Ok(new
         {
             success = true,
@@ -62,7 +59,7 @@ public class UsersController : ControllerBase
         }));
     }
 
-[HttpPost("me/change-password")]
+    [HttpPost("me/change-password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -70,7 +67,6 @@ public class UsersController : ControllerBase
         [FromBody] ChangePasswordRequest request,
         CancellationToken ct)
     {
-
         return Task.FromResult<IActionResult>(NoContent());
     }
 }
