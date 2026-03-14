@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\FinTech.Infrastructure\FinTech.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.Infrastructure\FinTech.Infrastructure.csproj" />
     <!-- Reference other modules to consume their domain events -->
     <ProjectReference Include="..\..\Identity\FinTech.Modules.Identity\FinTech.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\Wallet\FinTech.Modules.Wallet\FinTech.Modules.Wallet.csproj" />

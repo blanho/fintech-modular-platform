@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\FinTech.Infrastructure\FinTech.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.Infrastructure\FinTech.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
