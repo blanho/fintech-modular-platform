@@ -1,14 +1,14 @@
-﻿namespace FinTech.Api.Middleware;
-
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
+using FinTech.BuildingBlocks.Domain;
 using FluentValidation;
-using FinTech.SharedKernel.Domain;
+
+namespace FinTech.Api.Middleware;
 
 public class ExceptionHandlingMiddleware
 {
-    private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly RequestDelegate _next;
 
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
@@ -42,21 +42,17 @@ public class ExceptionHandlingMiddleware
         };
 
         if (statusCode == (int)HttpStatusCode.InternalServerError)
-        {
             _logger.LogError(
                 exception,
                 "[{CorrelationId}] Unhandled exception occurred: {Message}",
                 correlationId,
                 exception.Message);
-        }
         else
-        {
             _logger.LogWarning(
                 "[{CorrelationId}] Handled exception: {ExceptionType} - {Message}",
                 correlationId,
                 exception.GetType().Name,
                 exception.Message);
-        }
 
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";

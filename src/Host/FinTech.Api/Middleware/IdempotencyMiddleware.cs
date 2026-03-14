@@ -3,8 +3,8 @@
 public class IdempotencyMiddleware
 {
     private const string IdempotencyKeyHeader = "Idempotency-Key";
-    private readonly RequestDelegate _next;
     private readonly ILogger<IdempotencyMiddleware> _logger;
+    private readonly RequestDelegate _next;
 
     public IdempotencyMiddleware(RequestDelegate next, ILogger<IdempotencyMiddleware> logger)
     {
@@ -14,7 +14,6 @@ public class IdempotencyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-
         if (IsMutationMethod(context.Request.Method))
         {
             var idempotencyKey = GetOrCreateIdempotencyKey(context);
@@ -43,12 +42,9 @@ public class IdempotencyMiddleware
         if (context.Request.Headers.TryGetValue(IdempotencyKeyHeader, out var key))
         {
             var keyValue = key.ToString();
-            if (!string.IsNullOrWhiteSpace(keyValue))
-            {
-                return keyValue;
-            }
+            if (!string.IsNullOrWhiteSpace(keyValue)) return keyValue;
         }
 
-return $"auto_{Guid.NewGuid():N}";
+        return $"auto_{Guid.NewGuid():N}";
     }
 }

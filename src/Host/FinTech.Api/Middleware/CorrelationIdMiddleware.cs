@@ -1,6 +1,6 @@
-﻿namespace FinTech.Api.Middleware;
+﻿using Serilog.Context;
 
-using Serilog.Context;
+namespace FinTech.Api.Middleware;
 
 public class CorrelationIdMiddleware
 {
@@ -16,15 +16,15 @@ public class CorrelationIdMiddleware
     {
         var correlationId = GetOrCreateCorrelationId(context);
 
-context.Items["CorrelationId"] = correlationId;
+        context.Items["CorrelationId"] = correlationId;
 
-context.Response.OnStarting(() =>
+        context.Response.OnStarting(() =>
         {
             context.Response.Headers[CorrelationIdHeader] = correlationId;
             return Task.CompletedTask;
         });
 
-using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("CorrelationId", correlationId))
         {
             await _next(context);
         }
@@ -35,10 +35,7 @@ using (LogContext.PushProperty("CorrelationId", correlationId))
         if (context.Request.Headers.TryGetValue(CorrelationIdHeader, out var correlationId))
         {
             var id = correlationId.ToString();
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                return id;
-            }
+            if (!string.IsNullOrWhiteSpace(id)) return id;
         }
 
         return Guid.NewGuid().ToString("N");
