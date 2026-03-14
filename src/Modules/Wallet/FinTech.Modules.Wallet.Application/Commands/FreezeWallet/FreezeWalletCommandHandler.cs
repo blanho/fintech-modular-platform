@@ -1,9 +1,9 @@
-﻿namespace FinTech.Modules.Wallet.Application.Commands.FreezeWallet;
-
-using FinTech.BuildingBlocks.Domain.Primitives;
+﻿using FinTech.BuildingBlocks.Domain.Primitives;
 using FinTech.BuildingBlocks.Domain.Results;
 using FinTech.Modules.Wallet.Application.Interfaces;
 using MediatR;
+
+namespace FinTech.Modules.Wallet.Application.Commands.FreezeWallet;
 
 public sealed class FreezeWalletCommandHandler
     : IRequestHandler<FreezeWalletCommand, Result<FreezeWalletResponse>>
@@ -22,18 +22,18 @@ public sealed class FreezeWalletCommandHandler
         var walletId = new WalletId(request.WalletId);
         var userId = new UserId(request.UserId);
 
-var wallet = await _walletRepository.GetByIdAsync(walletId, cancellationToken);
+        var wallet = await _walletRepository.GetByIdAsync(walletId, cancellationToken);
         if (wallet is null)
             return Result<FreezeWalletResponse>.Failure(Error.NotFound("Wallet"));
 
-if (!wallet.IsOwnedBy(userId))
+        if (!wallet.IsOwnedBy(userId))
             return Result<FreezeWalletResponse>.Failure(Error.Forbidden("You don't have access to this wallet"));
 
-var freezeResult = wallet.Freeze();
+        var freezeResult = wallet.Freeze();
         if (freezeResult.IsFailure)
             return Result<FreezeWalletResponse>.Failure(freezeResult.Error);
 
-_walletRepository.Update(wallet);
+        _walletRepository.Update(wallet);
         await _walletRepository.SaveChangesAsync(cancellationToken);
 
         return Result<FreezeWalletResponse>.Success(new FreezeWalletResponse(

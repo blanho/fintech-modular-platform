@@ -1,7 +1,7 @@
-﻿namespace FinTech.Modules.Wallet.Application.Queries.GetWalletById;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using MediatR;
+
+namespace FinTech.Modules.Wallet.Application.Queries.GetWalletById;
 
 public sealed record GetWalletByIdQuery(
     Guid WalletId,

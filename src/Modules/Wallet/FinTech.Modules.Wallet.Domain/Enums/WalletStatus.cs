@@ -2,10 +2,9 @@
 
 public enum WalletStatus
 {
+    Active = 1,
 
-Active = 1,
+    Frozen = 2,
 
-Frozen = 2,
-
-Closed = 3
+    Closed = 3
 }

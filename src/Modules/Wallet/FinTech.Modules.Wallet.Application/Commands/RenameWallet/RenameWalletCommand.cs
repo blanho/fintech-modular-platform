@@ -1,7 +1,7 @@
-﻿namespace FinTech.Modules.Wallet.Application.Commands.RenameWallet;
-
-using FinTech.BuildingBlocks.Domain.Results;
+﻿using FinTech.BuildingBlocks.Domain.Results;
 using MediatR;
+
+namespace FinTech.Modules.Wallet.Application.Commands.RenameWallet;
 
 public sealed record RenameWalletCommand(
     Guid WalletId,

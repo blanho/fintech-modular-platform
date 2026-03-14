@@ -1,10 +1,9 @@
-﻿namespace FinTech.Modules.Wallet.Infrastructure.Persistence;
-
-using FinTech.Modules.Wallet.Domain.Entities;
-using FinTech.BuildingBlocks.Domain;
+﻿using FinTech.BuildingBlocks.Domain;
 using FinTech.BuildingBlocks.Domain.Primitives;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+
+namespace FinTech.Modules.Wallet.Infrastructure.Persistence;
 
 public sealed class WalletDbContext : DbContext
 {
@@ -17,7 +16,7 @@ public sealed class WalletDbContext : DbContext
         _mediator = mediator;
     }
 
-    public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<Domain.Entities.Wallet> Wallets => Set<Domain.Entities.Wallet>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,18 +26,13 @@ public sealed class WalletDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-
         foreach (var entry in ChangeTracker.Entries<AggregateRoot<WalletId>>())
-        {
             if (entry.State == EntityState.Modified)
-            {
                 entry.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
-            }
-        }
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
-await DispatchDomainEventsAsync(cancellationToken);
+        await DispatchDomainEventsAsync(cancellationToken);
 
         return result;
     }
@@ -56,9 +50,6 @@ await DispatchDomainEventsAsync(cancellationToken);
 
         domainEntities.ForEach(e => e.ClearDomainEvents());
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await _mediator.Publish(domainEvent, cancellationToken);
-        }
+        foreach (var domainEvent in domainEvents) await _mediator.Publish(domainEvent, cancellationToken);
     }
 }

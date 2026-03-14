@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>FinTech.Modules.Wallet.Api</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>FinTech.Modules.Wallet.Api</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FinTech.Modules.Wallet.Application\FinTech.Modules.Wallet.Application.csproj" />
-    <ProjectReference Include="..\FinTech.Modules.Wallet.Infrastructure\FinTech.Modules.Wallet.Infrastructure.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Wallet.Application\FinTech.Modules.Wallet.Application.csproj"/>
+        <ProjectReference Include="..\FinTech.Modules.Wallet.Infrastructure\FinTech.Modules.Wallet.Infrastructure.csproj"/>
+    </ItemGroup>
 
 </Project>
