@@ -1,3 +1,4 @@
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.Modules.Report.Application.Commands.GenerateReport;
 using FinTech.Modules.Report.Application.Queries.ExportReport;
 using FinTech.Modules.Report.Application.Queries.GetReport;
@@ -23,6 +24,7 @@ public sealed class ReportsController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission("reports:read")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GenerateReport(
@@ -47,6 +49,7 @@ public sealed class ReportsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [HasPermission("reports:read")]
     [ProducesResponseType(typeof(ReportDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetReport(Guid id, CancellationToken cancellationToken)
@@ -59,6 +62,7 @@ public sealed class ReportsController : ControllerBase
     }
 
     [HttpGet("my")]
+    [HasPermission("reports:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyReports(
         [FromQuery] int page = 1,
@@ -73,6 +77,7 @@ public sealed class ReportsController : ControllerBase
     }
 
     [HttpGet("{id:guid}/export")]
+    [HasPermission("reports:export")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ExportReport(Guid id, CancellationToken cancellationToken)

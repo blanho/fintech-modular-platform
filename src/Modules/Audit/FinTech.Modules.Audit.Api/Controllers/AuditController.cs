@@ -1,3 +1,4 @@
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Audit.Application.Queries.GetAuditLogs;
 using MediatR;
@@ -20,6 +21,7 @@ public class AuditController : ControllerBase
     }
 
     [HttpGet("logs")]
+    [HasPermission("audit:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAuditLogs(

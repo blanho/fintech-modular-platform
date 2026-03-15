@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using FinTech.BuildingBlocks.Domain.Primitives;
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Notification.Api.Requests;
 using FinTech.Modules.Notification.Application.Commands.UpdatePreferences;
@@ -25,6 +26,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet("preferences")]
+    [HasPermission("users:read")]
     public async Task<IActionResult> GetPreferences(CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -41,6 +43,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPut("preferences")]
+    [HasPermission("users:write")]
     public async Task<IActionResult> UpdatePreferences(
         [FromBody] UpdatePreferencesRequest request,
         CancellationToken cancellationToken)
@@ -67,6 +70,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission("users:read")]
     public async Task<IActionResult> GetNotifications(
         [FromQuery] string? status = null,
         [FromQuery] string? category = null,

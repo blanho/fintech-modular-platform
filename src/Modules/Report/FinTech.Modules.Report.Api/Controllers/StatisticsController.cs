@@ -1,3 +1,4 @@
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.Modules.Report.Application.Queries.GetDashboardStatistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,7 @@ public sealed class StatisticsController : ControllerBase
     }
 
     [HttpGet("dashboard")]
+    [HasPermission("reports:read")]
     [ProducesResponseType(typeof(DashboardStatisticsDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDashboardStatistics(CancellationToken cancellationToken)
     {

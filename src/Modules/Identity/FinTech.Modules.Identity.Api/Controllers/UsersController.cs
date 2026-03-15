@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using FinTech.BuildingBlocks.Domain.Primitives;
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Identity.Api.Requests;
 using FinTech.Modules.Identity.Application.Queries.GetCurrentUser;
@@ -23,6 +24,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("me")]
+    [HasPermission("users:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetCurrentUser(CancellationToken ct)
@@ -45,6 +47,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPatch("me")]
+    [HasPermission("users:write")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -60,6 +63,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("me/change-password")]
+    [HasPermission("users:write")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

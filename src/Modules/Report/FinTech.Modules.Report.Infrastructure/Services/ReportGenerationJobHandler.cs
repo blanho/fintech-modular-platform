@@ -1,86 +1,66 @@
 using System.Text.Json;
+using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.Modules.Report.Application.Interfaces;
 using FinTech.Modules.Report.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace FinTech.Modules.Report.Infrastructure.Services;
 
-public sealed class ReportGeneratorService : BackgroundService
+public sealed class ReportGenerationJobHandler : IJobHandler
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<ReportGeneratorService> _logger;
-    private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(10);
-    private const int BatchSize = 5;
+    private readonly ILogger<ReportGenerationJobHandler> _logger;
 
-    public ReportGeneratorService(
+    public string JobType => "report-generation";
+
+    public ReportGenerationJobHandler(
         IServiceScopeFactory scopeFactory,
-        ILogger<ReportGeneratorService> logger)
+        ILogger<ReportGenerationJobHandler> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task ExecuteAsync(Guid jobId, string payload, IJobProgressReporter progress, CancellationToken ct)
     {
-        _logger.LogInformation("ReportGeneratorService started");
+        var reportId = JsonSerializer.Deserialize<Guid>(payload);
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await ProcessPendingReports(stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing pending reports");
-            }
-
-            await Task.Delay(PollingInterval, stoppingToken);
-        }
-
-        _logger.LogInformation("ReportGeneratorService stopped");
-    }
-
-    private async Task ProcessPendingReports(CancellationToken stoppingToken)
-    {
         using var scope = _scopeFactory.CreateScope();
         var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
 
-        var pendingReports = await reportRepository.GetPendingReportsAsync(BatchSize, stoppingToken);
-        if (pendingReports.Count == 0) return;
-
-        _logger.LogInformation("Processing {Count} pending reports", pendingReports.Count);
-
-        foreach (var report in pendingReports)
+        var report = await reportRepository.GetByIdAsync(reportId, ct);
+        if (report is null)
         {
-            try
-            {
-                report.MarkAsGenerating();
-                reportRepository.Update(report);
-                await reportRepository.SaveChangesAsync(stoppingToken);
+            _logger.LogWarning("Report {ReportId} not found for job {JobId}", reportId, jobId);
+            return;
+        }
 
-                var resultData = await GenerateReportData(report, stoppingToken);
-                var dataBytes = System.Text.Encoding.UTF8.GetByteCount(resultData);
+        try
+        {
+            report.MarkAsGenerating();
+            reportRepository.Update(report);
+            await reportRepository.SaveChangesAsync(ct);
+            await progress.ReportProgressAsync(10, ct);
 
-                report.Complete(resultData, dataBytes);
-                reportRepository.Update(report);
-                await reportRepository.SaveChangesAsync(stoppingToken);
+            var resultData = await GenerateReportData(report, ct);
+            await progress.ReportProgressAsync(80, ct);
 
-                _logger.LogInformation("Report {ReportId} completed successfully", report.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to generate report {ReportId}", report.Id);
-                report.Fail(ex.Message);
-                reportRepository.Update(report);
-                await reportRepository.SaveChangesAsync(stoppingToken);
-            }
+            var dataBytes = System.Text.Encoding.UTF8.GetByteCount(resultData);
+            report.Complete(resultData, dataBytes);
+            reportRepository.Update(report);
+            await reportRepository.SaveChangesAsync(ct);
+            await progress.ReportProgressAsync(100, ct);
+
+            _logger.LogInformation("Report {ReportId} completed via BackgroundJob {JobId}", reportId, jobId);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to generate report {ReportId} via job {JobId}", reportId, jobId);
+            report.Fail(ex.Message);
+            reportRepository.Update(report);
+            await reportRepository.SaveChangesAsync(ct);
+            throw;
         }
     }
 

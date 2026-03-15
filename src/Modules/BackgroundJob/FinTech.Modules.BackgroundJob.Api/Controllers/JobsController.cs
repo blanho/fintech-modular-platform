@@ -1,4 +1,5 @@
 using FinTech.BuildingBlocks.Application.Contracts;
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.BackgroundJob.Application.Queries;
 using MediatR;
@@ -23,6 +24,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("{jobId:guid}")]
+    [HasPermission("system:manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetStatus(Guid jobId, CancellationToken ct)
@@ -32,6 +34,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpPost("{jobId:guid}/cancel")]
+    [HasPermission("system:manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Cancel(Guid jobId, CancellationToken ct)

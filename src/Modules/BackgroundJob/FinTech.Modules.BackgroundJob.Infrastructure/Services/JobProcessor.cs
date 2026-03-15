@@ -1,3 +1,4 @@
+using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.Modules.BackgroundJob.Application.Interfaces;
 using FinTech.Modules.BackgroundJob.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;

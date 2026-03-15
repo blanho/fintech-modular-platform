@@ -1,3 +1,4 @@
+using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.Modules.Report.Application.Interfaces;
 using FinTech.Modules.Report.Infrastructure.Persistence;
 using FinTech.Modules.Report.Infrastructure.Persistence.Repositories;
@@ -23,7 +24,7 @@ public static class ReportModuleRegistration
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
 
-        services.AddHostedService<ReportGeneratorService>();
+        services.AddSingleton<IJobHandler, ReportGenerationJobHandler>();
         services.AddHostedService<StatisticsAggregatorService>();
 
         services.AddMediatR(cfg =>

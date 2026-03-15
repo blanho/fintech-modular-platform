@@ -1,4 +1,5 @@
-﻿using FinTech.BuildingBlocks.Infrastructure.Extensions;
+﻿using FinTech.BuildingBlocks.Infrastructure.Authorization;
+using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Transaction.Api.Requests;
 using FinTech.Modules.Transaction.Application.Commands.Deposit;
 using FinTech.Modules.Transaction.Application.Commands.Transfer;
@@ -25,6 +26,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("transfer")]
+    [HasPermission("transactions:write")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -54,6 +56,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("deposit")]
+    [HasPermission("transactions:write")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -82,6 +85,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("withdraw")]
+    [HasPermission("transactions:write")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -110,6 +114,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("{transactionId:guid}")]
+    [HasPermission("transactions:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(
@@ -123,6 +128,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission("transactions:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByWallet(
         [FromQuery] Guid walletId,

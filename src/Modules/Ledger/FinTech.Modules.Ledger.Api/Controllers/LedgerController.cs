@@ -1,4 +1,5 @@
 ﻿using FinTech.BuildingBlocks.Domain.Primitives;
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Ledger.Application.Queries.GetBalance;
 using FinTech.Modules.Ledger.Application.Queries.GetEntriesByTransaction;
@@ -23,6 +24,7 @@ public class LedgerController : ControllerBase
     }
 
     [HttpGet("entries")]
+    [HasPermission("transactions:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetEntries(
@@ -53,6 +55,7 @@ public class LedgerController : ControllerBase
     }
 
     [HttpGet("balance/{walletId:guid}")]
+    [HasPermission("wallets:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetBalance(

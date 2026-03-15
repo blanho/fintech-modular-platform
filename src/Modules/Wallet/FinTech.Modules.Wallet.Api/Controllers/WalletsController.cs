@@ -9,6 +9,7 @@ using FinTech.Modules.Wallet.Application.Commands.UnfreezeWallet;
 using FinTech.Modules.Wallet.Application.Queries.GetWalletBalance;
 using FinTech.Modules.Wallet.Application.Queries.GetWalletById;
 using FinTech.Modules.Wallet.Application.Queries.GetWalletsByUser;
+using FinTech.BuildingBlocks.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpPost]
+    [HasPermission("wallets:write")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateWallet(
@@ -47,6 +49,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpGet("{walletId:guid}")]
+    [HasPermission("wallets:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetWallet(
@@ -62,6 +65,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission("wallets:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetWallets(
         [FromQuery] int page = 1,
@@ -94,6 +98,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpGet("{walletId:guid}/balance")]
+    [HasPermission("wallets:read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetWalletBalance(
@@ -109,6 +114,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpPatch("{walletId:guid}")]
+    [HasPermission("wallets:write")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RenameWallet(
@@ -125,6 +131,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpPost("{walletId:guid}/freeze")]
+    [HasPermission("wallets:manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -141,6 +148,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpPost("{walletId:guid}/unfreeze")]
+    [HasPermission("wallets:manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -157,6 +165,7 @@ public sealed class WalletsController : ControllerBase
     }
 
     [HttpPost("{walletId:guid}/close")]
+    [HasPermission("wallets:manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
