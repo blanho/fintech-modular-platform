@@ -1,0 +1,235 @@
+# ──────────────────────────────────────────────────────────────
+# CI Pipeline — Build, Test, Analyze
+# Triggers on push to main and all pull requests
+# ──────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'infrastructure/**'
+      - '.gitignore'
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'infrastructure/**'
+      - '.gitignore'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  NUGET_CERT_REVOCATION_MODE: offline
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Build & Compile
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore FinTech.sln
+
+      - name: Build solution
+        run: dotnet build FinTech.sln --no-restore --configuration Release --warnaserror
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+          retention-days: 1
+
+  # ─────────────────────────────────────────────
+  # Architecture Tests
+  # ─────────────────────────────────────────────
+  test-architecture:
+    name: Architecture Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Run architecture tests
+        run: >
+          dotnet test tests/Backend/Architecture/FinTech.Tests.Architecture/FinTech.Tests.Architecture.csproj
+          --configuration Release
+          --logger "trx;LogFileName=architecture-results.trx"
+          --logger "console;verbosity=normal"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-test-results
+          path: ./test-results/*.trx
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Unit Tests
+  # ─────────────────────────────────────────────
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Run unit tests
+        run: >
+          dotnet test tests/Backend/Unit/FinTech.Tests.Unit/FinTech.Tests.Unit.csproj
+          --configuration Release
+          --logger "trx;LogFileName=unit-results.trx"
+          --logger "console;verbosity=normal"
+          --results-directory ./test-results
+          --collect:"XPlat Code Coverage"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: ./test-results
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Integration Tests (with services)
+  # ─────────────────────────────────────────────
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: fintech_test
+          POSTGRES_USER: fintech
+          POSTGRES_PASSWORD: fintech_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fintech -d fintech_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: fintech
+          RABBITMQ_DEFAULT_PASS: fintech_test_password
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
+
+    env:
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=fintech_test;Username=fintech;Password=fintech_test_password"
+      ConnectionStrings__Redis: "localhost:6379"
+      RabbitMQ__Host: localhost
+      RabbitMQ__Username: fintech
+      RabbitMQ__Password: fintech_test_password
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Initialize test database
+        run: PGPASSWORD=fintech_test_password psql -h localhost -U fintech -d fintech_test -f infrastructure/docker/init-db.sql
+
+      - name: Run integration tests
+        run: >
+          dotnet test tests/Backend/Integration/FinTech.Tests.Integration/FinTech.Tests.Integration.csproj
+          --configuration Release
+          --logger "trx;LogFileName=integration-results.trx"
+          --logger "console;verbosity=normal"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ./test-results/*.trx
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Code Quality Gate
+  # ─────────────────────────────────────────────
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [build, test-architecture, test-unit, test-integration]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.build.result }}" == "failure" ] || \
+             [ "${{ needs.test-architecture.result }}" == "failure" ] || \
+             [ "${{ needs.test-unit.result }}" == "failure" ] || \
+             [ "${{ needs.test-integration.result }}" == "failure" ]; then
+            echo "❌ Quality gate failed"
+            exit 1
+          fi
+          echo "✅ All checks passed"

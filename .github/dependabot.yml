@@ -1,0 +1,57 @@
+# ──────────────────────────────────────────────
+# Dependabot — automated dependency updates
+# ──────────────────────────────────────────────
+
+version: 2
+updates:
+  # NuGet packages
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "nuget"
+    groups:
+      microsoft:
+        patterns:
+          - "Microsoft.*"
+          - "System.*"
+      testing:
+        patterns:
+          - "xunit*"
+          - "coverlet*"
+          - "FluentAssertions*"
+          - "NSubstitute*"
+          - "NetArchTest*"
+      infrastructure:
+        patterns:
+          - "Npgsql*"
+          - "MassTransit*"
+          - "StackExchange*"
+          - "Polly*"
+          - "Serilog*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci/cd"
+
+  # Docker base images
+  - package-ecosystem: "docker"
+    directory: "/infrastructure/docker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "docker"

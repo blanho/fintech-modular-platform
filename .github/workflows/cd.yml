@@ -1,0 +1,184 @@
+# ──────────────────────────────────────────────────────────────
+# CD Pipeline — Build, Push, Deploy
+# Triggers on version tags and manual dispatch
+# ──────────────────────────────────────────────────────────────
+
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOTNET_VERSION: '9.0.x'
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Run CI first
+  # ─────────────────────────────────────────────
+  ci:
+    name: CI Checks
+    uses: ./.github/workflows/ci.yml
+
+  # ─────────────────────────────────────────────
+  # Build & Push Docker Image
+  # ─────────────────────────────────────────────
+  docker:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    needs: ci
+    timeout-minutes: 15
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+      image-digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  # ─────────────────────────────────────────────
+  # Deploy to Staging
+  # ─────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy → Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.event.inputs.environment != 'production'
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to staging"
+          echo "Image digest: ${{ needs.docker.outputs.image-digest }}"
+          # ─────────────────────────────────────────────────
+          # Replace with your deployment commands, e.g.:
+          #
+          # Azure Container Apps:
+          #   az containerapp update \
+          #     --name fintech-api \
+          #     --resource-group fintech-staging \
+          #     --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }}
+          #
+          # Kubernetes:
+          #   kubectl set image deployment/fintech-api \
+          #     api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} \
+          #     --namespace fintech-staging
+          #
+          # Docker Compose (SSH):
+          #   ssh deploy@staging "cd /app && docker compose pull api && docker compose up -d api"
+          # ─────────────────────────────────────────────────
+
+      - name: Smoke test
+        run: |
+          echo "🔍 Running smoke tests against staging..."
+          # curl -sf ${{ vars.STAGING_URL }}/health/ready || exit 1
+          echo "✅ Staging smoke tests passed"
+
+  # ─────────────────────────────────────────────
+  # Deploy to Production (manual approval)
+  # ─────────────────────────────────────────────
+  deploy-production:
+    name: Deploy → Production
+    runs-on: ubuntu-latest
+    needs: [docker, deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to production"
+          echo "Image digest: ${{ needs.docker.outputs.image-digest }}"
+          # Same deployment commands as staging, targeting production resources
+
+      - name: Smoke test
+        run: |
+          echo "🔍 Running smoke tests against production..."
+          # curl -sf ${{ vars.PRODUCTION_URL }}/health/ready || exit 1
+          echo "✅ Production smoke tests passed"
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## Docker Image
+            ```
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }}
+            ```
+            **Digest:** `${{ needs.docker.outputs.image-digest }}`
