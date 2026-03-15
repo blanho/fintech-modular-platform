@@ -80,6 +80,21 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         return Convert.ToBase64String(randomBytes);
     }
 
+    public TokenInfo? ExtractTokenInfo(string accessToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(accessToken))
+            return null;
+
+        var jwt = handler.ReadJwtToken(accessToken);
+        var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+        if (string.IsNullOrEmpty(jti))
+            return null;
+
+        return new TokenInfo(jti, jwt.ValidTo);
+    }
+
     private static IEnumerable<Claim> GetOptionalClaims(User user)
     {
         var claims = new List<Claim>();

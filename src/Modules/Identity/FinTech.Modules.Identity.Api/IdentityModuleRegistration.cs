@@ -37,6 +37,8 @@ public static class IdentityModuleRegistration
 
         services.AddScoped<IIdentityService, IdentityService>();
 
+        services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
+
         services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 

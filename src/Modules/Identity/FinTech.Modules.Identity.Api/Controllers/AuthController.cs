@@ -1,6 +1,7 @@
 ﻿using FinTech.BuildingBlocks.Infrastructure.Extensions;
 using FinTech.Modules.Identity.Api.Requests;
 using FinTech.Modules.Identity.Application.Commands.Login;
+using FinTech.Modules.Identity.Application.Commands.Logout;
 using FinTech.Modules.Identity.Application.Commands.RefreshToken;
 using FinTech.Modules.Identity.Application.Commands.Register;
 using MediatR;
@@ -65,6 +66,24 @@ public class AuthController : ControllerBase
         CancellationToken ct)
     {
         var command = new RefreshTokenCommand(request.RefreshToken);
+
+        var result = await _mediator.Send(command, ct);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequest request,
+        CancellationToken ct)
+    {
+        var accessToken = HttpContext.Request.Headers.Authorization
+            .ToString().Replace("Bearer ", string.Empty);
+
+        var command = new LogoutCommand(accessToken, request.RefreshToken);
 
         var result = await _mediator.Send(command, ct);
 

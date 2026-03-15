@@ -9,6 +9,7 @@ using FinTech.BuildingBlocks.Infrastructure.Caching;
 using FinTech.Modules.Audit.Api;
 using FinTech.Modules.Audit.Application.Behaviors;
 using FinTech.Modules.Identity.Api;
+using FinTech.Modules.Identity.Infrastructure.Middleware;
 using FinTech.Modules.Ledger.Api;
 using FinTech.Modules.Notification.Api;
 using FinTech.Modules.Notification.Application.Consumers;
@@ -255,7 +256,13 @@ app.Use(async (context, next) =>
 
 app.UseHttpsRedirection();
 app.UseCors("DefaultPolicy");
+
+app.UseMiddleware<AuthRateLimitingMiddleware>();
+
 app.UseAuthentication();
+
+app.UseMiddleware<TokenBlacklistMiddleware>();
+
 app.UseAuthorization();
 
 app.UseSerilogRequestLogging(options =>

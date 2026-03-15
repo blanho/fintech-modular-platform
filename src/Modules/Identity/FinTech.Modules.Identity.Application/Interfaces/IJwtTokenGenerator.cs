@@ -11,4 +11,8 @@ public interface IJwtTokenGenerator
     Task<string> GenerateAccessTokenAsync(User user, CancellationToken ct = default);
 
     string GenerateRefreshToken();
+
+    TokenInfo? ExtractTokenInfo(string accessToken);
 }
+
+public readonly record struct TokenInfo(string Jti, DateTime ExpiresAt);
