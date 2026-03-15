@@ -1,0 +1,44 @@
+# ──────────────────────────────────────────────
+# FinTech Platform — Docker ignore
+# Keeps build context small and fast
+# ──────────────────────────────────────────────
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+.idea
+*.user
+*.suo
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Node / Frontend
+**/node_modules/
+**/dist/
+**/.next/
+
+# Docker
+**/docker-compose*.yml
+**/.env
+**/Dockerfile*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+LICENSE
+
+# Test results
+**/TestResults/
+**/coverage/
