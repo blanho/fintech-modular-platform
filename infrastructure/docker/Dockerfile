@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS restore
 WORKDIR /src
 
 COPY FinTech.sln ./
