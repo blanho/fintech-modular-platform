@@ -10,6 +10,7 @@ using FinTech.Modules.Audit.Api;
 using FinTech.Modules.Audit.Application.Behaviors;
 using FinTech.Modules.BackgroundJob.Api;
 using FinTech.Modules.Identity.Api;
+using FinTech.Modules.Report.Api;
 using FinTech.Modules.Identity.Infrastructure.Middleware;
 using FinTech.Modules.Ledger.Api;
 using FinTech.Modules.Notification.Api;
@@ -47,6 +48,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(NotificationModuleRegistration).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(AuditModuleRegistration).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(BackgroundJobModuleRegistration).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(ReportModuleRegistration).Assembly);
 
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuditBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
@@ -60,6 +62,7 @@ builder.Services.AddTransactionModule(builder.Configuration);
 builder.Services.AddNotificationModule(builder.Configuration);
 builder.Services.AddAuditModule(builder.Configuration);
 builder.Services.AddBackgroundJobModule(builder.Configuration);
+builder.Services.AddReportModule(builder.Configuration);
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
                 ?? throw new InvalidOperationException("JWT Secret is not configured");

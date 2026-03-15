@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.Report.Api</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Report.Application\FinTech.Modules.Report.Application.csproj"/>
+        <ProjectReference Include="..\FinTech.Modules.Report.Infrastructure\FinTech.Modules.Report.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>

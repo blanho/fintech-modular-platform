@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.Report.Application</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="FluentValidation" Version="11.9.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Report.Domain\FinTech.Modules.Report.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.Application\FinTech.BuildingBlocks.Application.csproj"/>
+    </ItemGroup>
+</Project>

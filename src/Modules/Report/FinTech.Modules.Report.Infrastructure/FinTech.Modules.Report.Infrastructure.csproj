@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.Report.Infrastructure</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Report.Application\FinTech.Modules.Report.Application.csproj"/>
+        <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.Infrastructure\FinTech.BuildingBlocks.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>

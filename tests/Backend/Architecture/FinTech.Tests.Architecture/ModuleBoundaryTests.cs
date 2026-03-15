@@ -50,6 +50,20 @@ public class ModuleBoundaryTests
     [InlineData("BackgroundJob", "Transaction")]
     [InlineData("BackgroundJob", "Notification")]
     [InlineData("BackgroundJob", "Audit")]
+    [InlineData("Report", "Identity")]
+    [InlineData("Report", "Wallet")]
+    [InlineData("Report", "Ledger")]
+    [InlineData("Report", "Transaction")]
+    [InlineData("Report", "Notification")]
+    [InlineData("Report", "Audit")]
+    [InlineData("Report", "BackgroundJob")]
+    [InlineData("Identity", "Report")]
+    [InlineData("Wallet", "Report")]
+    [InlineData("Ledger", "Report")]
+    [InlineData("Transaction", "Report")]
+    [InlineData("Notification", "Report")]
+    [InlineData("Audit", "Report")]
+    [InlineData("BackgroundJob", "Report")]
     public void Module_Domain_Should_Not_Depend_On_Other_Module(string module, string otherModule)
     {
         var domainAssembly = GetAssembly(module, "Domain");
@@ -111,6 +125,20 @@ public class ModuleBoundaryTests
     [InlineData("BackgroundJob", "Transaction")]
     [InlineData("BackgroundJob", "Notification")]
     [InlineData("BackgroundJob", "Audit")]
+    [InlineData("Report", "Identity")]
+    [InlineData("Report", "Wallet")]
+    [InlineData("Report", "Ledger")]
+    [InlineData("Report", "Transaction")]
+    [InlineData("Report", "Notification")]
+    [InlineData("Report", "Audit")]
+    [InlineData("Report", "BackgroundJob")]
+    [InlineData("Identity", "Report")]
+    [InlineData("Wallet", "Report")]
+    [InlineData("Ledger", "Report")]
+    [InlineData("Transaction", "Report")]
+    [InlineData("Notification", "Report")]
+    [InlineData("Audit", "Report")]
+    [InlineData("BackgroundJob", "Report")]
     public void Module_Application_Should_Not_Depend_On_Other_Module(string module, string otherModule)
     {
         var applicationAssembly = GetAssembly(module, "Application");

@@ -22,5 +22,6 @@
         <ProjectReference Include="..\..\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj" />
         <ProjectReference Include="..\..\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj" />
         <ProjectReference Include="..\..\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Api\FinTech.Modules.BackgroundJob.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Report\FinTech.Modules.Report.Api\FinTech.Modules.Report.Api.csproj" />
     </ItemGroup>
 </Project>
