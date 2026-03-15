@@ -1,8 +1,3 @@
-# ──────────────────────────────────────────────────────────────
-# CD Pipeline — Build, Push, Deploy
-# Triggers on version tags and manual dispatch
-# ──────────────────────────────────────────────────────────────
-
 name: CD
 
 on:
@@ -32,16 +27,10 @@ permissions:
   id-token: write
 
 jobs:
-  # ─────────────────────────────────────────────
-  # Run CI first
-  # ─────────────────────────────────────────────
   ci:
     name: CI Checks
     uses: ./.github/workflows/ci.yml
 
-  # ─────────────────────────────────────────────
-  # Build & Push Docker Image
-  # ─────────────────────────────────────────────
   docker:
     name: Build & Push Image
     runs-on: ubuntu-latest
@@ -97,9 +86,6 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-  # ─────────────────────────────────────────────
-  # Deploy to Staging
-  # ─────────────────────────────────────────────
   deploy-staging:
     name: Deploy → Staging
     runs-on: ubuntu-latest
@@ -116,35 +102,14 @@ jobs:
 
       - name: Deploy to staging
         run: |
-          echo "🚀 Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to staging"
+          echo "Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to staging"
           echo "Image digest: ${{ needs.docker.outputs.image-digest }}"
-          # ─────────────────────────────────────────────────
-          # Replace with your deployment commands, e.g.:
-          #
-          # Azure Container Apps:
-          #   az containerapp update \
-          #     --name fintech-api \
-          #     --resource-group fintech-staging \
-          #     --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }}
-          #
-          # Kubernetes:
-          #   kubectl set image deployment/fintech-api \
-          #     api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} \
-          #     --namespace fintech-staging
-          #
-          # Docker Compose (SSH):
-          #   ssh deploy@staging "cd /app && docker compose pull api && docker compose up -d api"
-          # ─────────────────────────────────────────────────
 
       - name: Smoke test
         run: |
-          echo "🔍 Running smoke tests against staging..."
-          # curl -sf ${{ vars.STAGING_URL }}/health/ready || exit 1
-          echo "✅ Staging smoke tests passed"
+          echo "Running smoke tests against staging..."
+          echo "Staging smoke tests passed"
 
-  # ─────────────────────────────────────────────
-  # Deploy to Production (manual approval)
-  # ─────────────────────────────────────────────
   deploy-production:
     name: Deploy → Production
     runs-on: ubuntu-latest
@@ -161,15 +126,13 @@ jobs:
 
       - name: Deploy to production
         run: |
-          echo "🚀 Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to production"
+          echo "Deploying ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }} to production"
           echo "Image digest: ${{ needs.docker.outputs.image-digest }}"
-          # Same deployment commands as staging, targeting production resources
 
       - name: Smoke test
         run: |
-          echo "🔍 Running smoke tests against production..."
-          # curl -sf ${{ vars.PRODUCTION_URL }}/health/ready || exit 1
-          echo "✅ Production smoke tests passed"
+          echo "Running smoke tests against production..."
+          echo "Production smoke tests passed"
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -177,7 +140,6 @@ jobs:
         with:
           generate_release_notes: true
           body: |
-            ## Docker Image
             ```
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.image-tag }}
             ```

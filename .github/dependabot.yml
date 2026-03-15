@@ -1,10 +1,5 @@
-# ──────────────────────────────────────────────
-# Dependabot — automated dependency updates
-# ──────────────────────────────────────────────
-
 version: 2
 updates:
-  # NuGet packages
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
@@ -34,7 +29,6 @@ updates:
           - "Polly*"
           - "Serilog*"
 
-  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -45,7 +39,6 @@ updates:
       - "dependencies"
       - "ci/cd"
 
-  # Docker base images
   - package-ecosystem: "docker"
     directory: "/infrastructure/docker"
     schedule:

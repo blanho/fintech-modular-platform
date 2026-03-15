@@ -1,19 +1,6 @@
--- =============================================================================
--- FinTech Modular Platform — Database Initialization
--- PostgreSQL 16 — Schema-per-module isolation
--- =============================================================================
--- This script runs automatically on first container startup via
--- docker-entrypoint-initdb.d. It creates all module schemas, extensions,
--- tables, indexes, and seed data needed for the application to boot.
--- =============================================================================
-
--- Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- =============================================================================
--- SCHEMAS — one per bounded context
--- =============================================================================
 CREATE SCHEMA IF NOT EXISTS identity;
 CREATE SCHEMA IF NOT EXISTS wallet;
 CREATE SCHEMA IF NOT EXISTS ledger;
@@ -23,11 +10,6 @@ CREATE SCHEMA IF NOT EXISTS audit;
 CREATE SCHEMA IF NOT EXISTS background_job;
 CREATE SCHEMA IF NOT EXISTS report;
 
--- =============================================================================
--- IDENTITY MODULE
--- =============================================================================
-
--- Users
 CREATE TABLE identity.users (
     id              UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
     email           VARCHAR(255) NOT NULL,
@@ -42,7 +24,6 @@ CREATE TABLE identity.users (
 
 CREATE UNIQUE INDEX ix_users_email ON identity.users (email);
 
--- Roles
 CREATE TABLE identity.roles (
     id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
     name        VARCHAR(50) NOT NULL,
@@ -53,7 +34,6 @@ CREATE TABLE identity.roles (
 
 CREATE UNIQUE INDEX ix_roles_name ON identity.roles (name);
 
--- Permissions
 CREATE TABLE identity.permissions (
     id      UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     name    VARCHAR(100) NOT NULL,
@@ -62,7 +42,6 @@ CREATE TABLE identity.permissions (
 
 CREATE UNIQUE INDEX ix_permissions_role_name ON identity.permissions (role_id, name);
 
--- User Roles (join table)
 CREATE TABLE identity.user_roles (
     id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id     UUID        NOT NULL,
@@ -74,7 +53,6 @@ CREATE TABLE identity.user_roles (
 CREATE UNIQUE INDEX ix_user_roles_user_role ON identity.user_roles (user_id, role_id);
 CREATE INDEX ix_user_roles_role_id ON identity.user_roles (role_id);
 
--- Refresh Tokens
 CREATE TABLE identity.refresh_tokens (
     id                UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id           UUID         NOT NULL,
@@ -87,10 +65,6 @@ CREATE TABLE identity.refresh_tokens (
 
 CREATE INDEX ix_refresh_tokens_user_id ON identity.refresh_tokens (user_id);
 CREATE UNIQUE INDEX ix_refresh_tokens_token ON identity.refresh_tokens (token);
-
--- =============================================================================
--- WALLET MODULE
--- =============================================================================
 
 CREATE TABLE wallet.wallets (
     id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -105,10 +79,6 @@ CREATE TABLE wallet.wallets (
 CREATE INDEX ix_wallets_user_id  ON wallet.wallets (user_id);
 CREATE INDEX ix_wallets_currency ON wallet.wallets (currency);
 CREATE INDEX ix_wallets_status   ON wallet.wallets (status);
-
--- =============================================================================
--- LEDGER MODULE (immutable append-only)
--- =============================================================================
 
 CREATE TABLE ledger.entries (
     id           UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -125,7 +95,6 @@ CREATE INDEX ix_entries_wallet_id    ON ledger.entries (wallet_id);
 CREATE INDEX ix_entries_reference_id ON ledger.entries (reference_id);
 CREATE INDEX ix_entries_created_at   ON ledger.entries (created_at);
 
--- Protect ledger immutability at the DB level
 CREATE OR REPLACE FUNCTION ledger.prevent_update_delete()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -138,10 +107,6 @@ CREATE TRIGGER trg_entries_immutable
     BEFORE UPDATE OR DELETE ON ledger.entries
     FOR EACH ROW
     EXECUTE FUNCTION ledger.prevent_update_delete();
-
--- =============================================================================
--- TRANSACTION MODULE
--- =============================================================================
 
 CREATE TABLE transaction.transactions (
     id                UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -165,10 +130,6 @@ CREATE INDEX ix_transactions_target_wallet_id       ON transaction.transactions 
 CREATE INDEX ix_transactions_status                 ON transaction.transactions (status);
 CREATE INDEX ix_transactions_created_at             ON transaction.transactions (created_at);
 CREATE INDEX ix_transactions_source_wallet_created  ON transaction.transactions (source_wallet_id, created_at);
-
--- =============================================================================
--- NOTIFICATION MODULE
--- =============================================================================
 
 CREATE TABLE notification.notifications (
     id              UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -209,10 +170,6 @@ CREATE TABLE notification.notification_preferences (
 
 CREATE UNIQUE INDEX ix_preferences_user_id ON notification.notification_preferences (user_id);
 
--- =============================================================================
--- AUDIT MODULE
--- =============================================================================
-
 CREATE TABLE audit.audit_logs (
     id              UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id         UUID,
@@ -235,10 +192,6 @@ CREATE INDEX ix_audit_logs_resource_type  ON audit.audit_logs (resource_type);
 CREATE INDEX ix_audit_logs_timestamp      ON audit.audit_logs (timestamp DESC);
 CREATE INDEX ix_audit_logs_correlation_id ON audit.audit_logs (correlation_id);
 
--- =============================================================================
--- BACKGROUND JOB MODULE
--- =============================================================================
-
 CREATE TABLE background_job.jobs (
     id                          UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     job_type                    VARCHAR(256) NOT NULL,
@@ -260,10 +213,6 @@ CREATE INDEX ix_jobs_status      ON background_job.jobs (status);
 CREATE INDEX ix_jobs_job_type    ON background_job.jobs (job_type);
 CREATE INDEX ix_jobs_created_at  ON background_job.jobs (created_at DESC);
 CREATE INDEX ix_jobs_status_type ON background_job.jobs (status, job_type);
-
--- =============================================================================
--- REPORT MODULE
--- =============================================================================
 
 CREATE TABLE report.reports (
     id                  UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -303,18 +252,12 @@ CREATE INDEX ix_statistics_metric_period ON report.statistics_snapshots ("Metric
 CREATE INDEX ix_statistics_metric_ts     ON report.statistics_snapshots ("MetricType", "Timestamp");
 CREATE INDEX ix_statistics_timestamp     ON report.statistics_snapshots ("Timestamp");
 
--- =============================================================================
--- SEED DATA — RBAC Roles & Permissions
--- =============================================================================
-
--- Roles
 INSERT INTO identity.roles (id, name, type, description, is_system) VALUES
     ('a0000000-0000-0000-0000-000000000001', 'Admin',   0, 'Full system access',                          TRUE),
     ('a0000000-0000-0000-0000-000000000002', 'User',    1, 'Standard user with basic wallet and tx ops',  TRUE),
     ('a0000000-0000-0000-0000-000000000003', 'Auditor', 2, 'Read-only access to audit and report data',   TRUE),
     ('a0000000-0000-0000-0000-000000000004', 'Support', 3, 'Customer support with limited write access',  TRUE);
 
--- Admin permissions (14)
 INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'users:read',         'a0000000-0000-0000-0000-000000000001'),
     (uuid_generate_v4(), 'users:write',        'a0000000-0000-0000-0000-000000000001'),
@@ -331,7 +274,6 @@ INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'reports:export',     'a0000000-0000-0000-0000-000000000001'),
     (uuid_generate_v4(), 'system:manage',      'a0000000-0000-0000-0000-000000000001');
 
--- User permissions (6)
 INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'users:read',         'a0000000-0000-0000-0000-000000000002'),
     (uuid_generate_v4(), 'users:write',        'a0000000-0000-0000-0000-000000000002'),
@@ -340,7 +282,6 @@ INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'transactions:read',  'a0000000-0000-0000-0000-000000000002'),
     (uuid_generate_v4(), 'transactions:write', 'a0000000-0000-0000-0000-000000000002');
 
--- Auditor permissions (7)
 INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'users:read',         'a0000000-0000-0000-0000-000000000003'),
     (uuid_generate_v4(), 'wallets:read',       'a0000000-0000-0000-0000-000000000003'),
@@ -350,17 +291,12 @@ INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'reports:read',       'a0000000-0000-0000-0000-000000000003'),
     (uuid_generate_v4(), 'reports:export',     'a0000000-0000-0000-0000-000000000003');
 
--- Support permissions (5)
 INSERT INTO identity.permissions (id, name, role_id) VALUES
     (uuid_generate_v4(), 'users:read',         'a0000000-0000-0000-0000-000000000004'),
     (uuid_generate_v4(), 'users:write',        'a0000000-0000-0000-0000-000000000004'),
     (uuid_generate_v4(), 'wallets:read',       'a0000000-0000-0000-0000-000000000004'),
     (uuid_generate_v4(), 'transactions:read',  'a0000000-0000-0000-0000-000000000004'),
     (uuid_generate_v4(), 'reports:read',       'a0000000-0000-0000-0000-000000000004');
-
--- =============================================================================
--- GRANTS — ensure application user has full access to all schemas
--- =============================================================================
 
 DO $$
 DECLARE
@@ -380,11 +316,3 @@ BEGIN
     END LOOP;
 END
 $$;
-
--- =============================================================================
--- ✅ Database initialization complete
--- Schemas: identity, wallet, ledger, transaction, notification,
---          audit, background_job, report
--- Tables:  15 total
--- Seed:    4 roles, 32 permissions
--- =============================================================================

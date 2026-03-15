@@ -1,13 +1,8 @@
-# ──────────────────────────────────────────────────────────────
-# Security Pipeline — CodeQL, Dependency Audit, Secret Scanning
-# Runs on schedule, PRs, and manual dispatch
-# ──────────────────────────────────────────────────────────────
-
 name: Security
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
   push:
     branches: [main]
   pull_request:
@@ -25,9 +20,6 @@ env:
   DOTNET_NOLOGO: true
 
 jobs:
-  # ─────────────────────────────────────────────
-  # CodeQL Static Analysis
-  # ─────────────────────────────────────────────
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
@@ -61,9 +53,6 @@ jobs:
         with:
           category: "/language:${{ matrix.language }}"
 
-  # ─────────────────────────────────────────────
-  # NuGet Dependency Audit
-  # ─────────────────────────────────────────────
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
@@ -83,23 +72,23 @@ jobs:
 
       - name: Check for vulnerable packages
         run: |
-          echo "🔍 Scanning NuGet packages for known vulnerabilities..."
+          echo "Scanning NuGet packages for known vulnerabilities..."
           dotnet list FinTech.sln package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
 
           if grep -q "has the following vulnerable packages" vulnerability-report.txt; then
             echo "::warning::Vulnerable NuGet packages detected. Review the report."
           else
-            echo "✅ No known vulnerabilities found"
+            echo "No known vulnerabilities found"
           fi
 
       - name: Check for deprecated packages
         run: |
-          echo "🔍 Scanning for deprecated NuGet packages..."
+          echo "Scanning for deprecated NuGet packages..."
           dotnet list FinTech.sln package --deprecated 2>&1 | tee deprecated-report.txt
 
       - name: Check for outdated packages
         run: |
-          echo "🔍 Scanning for outdated NuGet packages..."
+          echo "Scanning for outdated NuGet packages..."
           dotnet list FinTech.sln package --outdated 2>&1 | tee outdated-report.txt
 
       - name: Upload audit reports
@@ -113,9 +102,6 @@ jobs:
             outdated-report.txt
           retention-days: 30
 
-  # ─────────────────────────────────────────────
-  # Docker Image Scan
-  # ─────────────────────────────────────────────
   docker-scan:
     name: Docker Image Scan
     runs-on: ubuntu-latest

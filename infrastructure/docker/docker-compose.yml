@@ -1,16 +1,6 @@
-# FinTech Modular Platform — Docker Compose
-# Usage:
-#   docker compose up -d                   Start all infrastructure
-#   docker compose up -d postgres redis rabbitmq   Infrastructure only
-#   docker compose --profile app up -d     Infrastructure + API
-#   docker compose down -v                 Tear down with volumes
-
 name: fintech-platform
 
 services:
-  # ─────────────────────────────────────────────
-  # PostgreSQL 16 — schema-per-module isolation
-  # ─────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: fintech-postgres
@@ -34,9 +24,6 @@ services:
     networks:
       - fintech-network
 
-  # ─────────────────────────────────────────────
-  # pgAdmin 4 — database management UI
-  # ─────────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: fintech-pgadmin
@@ -55,9 +42,6 @@ services:
     networks:
       - fintech-network
 
-  # ─────────────────────────────────────────────
-  # Redis 7 — caching + token blacklisting
-  # ─────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: fintech-redis
@@ -81,9 +65,6 @@ services:
     networks:
       - fintech-network
 
-  # ─────────────────────────────────────────────
-  # Redis Commander — Redis management UI
-  # ─────────────────────────────────────────────
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: fintech-redis-commander
@@ -98,9 +79,6 @@ services:
     networks:
       - fintech-network
 
-  # ─────────────────────────────────────────────
-  # RabbitMQ 3.13 — async messaging (MassTransit)
-  # ─────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: fintech-rabbitmq
@@ -110,8 +88,8 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-fintech_dev_password}
       RABBITMQ_DEFAULT_VHOST: /
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"         # AMQP
-      - "${RABBITMQ_MGMT_PORT:-15672}:15672"  # Management UI
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -123,10 +101,6 @@ services:
     networks:
       - fintech-network
 
-  # ─────────────────────────────────────────────
-  # FinTech API — .NET 9 modular monolith
-  # (activate with: --profile app)
-  # ─────────────────────────────────────────────
   api:
     build:
       context: ../..
