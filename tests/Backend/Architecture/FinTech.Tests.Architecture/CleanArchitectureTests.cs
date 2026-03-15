@@ -16,6 +16,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Domain_Should_Not_Depend_On_Application(string module)
     {
         var domainAssembly = GetAssembly(module, "Domain");
@@ -38,6 +39,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Domain_Should_Not_Depend_On_Infrastructure(string module)
     {
         var domainAssembly = GetAssembly(module, "Domain");
@@ -60,6 +62,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Domain_Should_Not_Depend_On_Api(string module)
     {
         var domainAssembly = GetAssembly(module, "Domain");
@@ -82,6 +85,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Application_Should_Not_Depend_On_Infrastructure(string module)
     {
         var applicationAssembly = GetAssembly(module, "Application");
@@ -104,6 +108,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Application_Should_Not_Depend_On_Api(string module)
     {
         var applicationAssembly = GetAssembly(module, "Application");
@@ -126,6 +131,7 @@ public class CleanArchitectureTests
     [InlineData("Transaction")]
     [InlineData("Notification")]
     [InlineData("Audit")]
+    [InlineData("BackgroundJob")]
     public void Infrastructure_Should_Not_Depend_On_Api(string module)
     {
         var infrastructureAssembly = GetAssembly(module, "Infrastructure");

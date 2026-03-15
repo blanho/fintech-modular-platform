@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.BackgroundJob.Api</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.BackgroundJob.Application\FinTech.Modules.BackgroundJob.Application.csproj"/>
+        <ProjectReference Include="..\FinTech.Modules.BackgroundJob.Infrastructure\FinTech.Modules.BackgroundJob.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>

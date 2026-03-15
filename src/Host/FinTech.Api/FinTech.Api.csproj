@@ -3,23 +3,24 @@
         <RootNamespace>FinTech.Api</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-        <PackageReference Include="Serilog.AspNetCore" Version="8.0.0"/>
-        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0"/>
-        <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0"/>
-        <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.Infrastructure\FinTech.BuildingBlocks.Infrastructure.csproj"/>
-        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.Observability\FinTech.BuildingBlocks.Observability.csproj"/>
-        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.EventBus\FinTech.BuildingBlocks.EventBus.csproj"/>
-        <ProjectReference Include="..\..\Modules\Identity\FinTech.Modules.Identity.Api\FinTech.Modules.Identity.Api.csproj"/>
-        <ProjectReference Include="..\..\Modules\Wallet\FinTech.Modules.Wallet.Api\FinTech.Modules.Wallet.Api.csproj"/>
-        <ProjectReference Include="..\..\Modules\Ledger\FinTech.Modules.Ledger.Api\FinTech.Modules.Ledger.Api.csproj"/>
-        <ProjectReference Include="..\..\Modules\Transaction\FinTech.Modules.Transaction.Api\FinTech.Modules.Transaction.Api.csproj"/>
-        <ProjectReference Include="..\..\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj"/>
-        <ProjectReference Include="..\..\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj"/>
+        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.Infrastructure\FinTech.BuildingBlocks.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.Observability\FinTech.BuildingBlocks.Observability.csproj" />
+        <ProjectReference Include="..\..\BuildingBlocks\FinTech.BuildingBlocks.EventBus\FinTech.BuildingBlocks.EventBus.csproj" />
+        <ProjectReference Include="..\..\Modules\Identity\FinTech.Modules.Identity.Api\FinTech.Modules.Identity.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Wallet\FinTech.Modules.Wallet.Api\FinTech.Modules.Wallet.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Ledger\FinTech.Modules.Ledger.Api\FinTech.Modules.Ledger.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Transaction\FinTech.Modules.Transaction.Api\FinTech.Modules.Transaction.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj" />
+        <ProjectReference Include="..\..\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Api\FinTech.Modules.BackgroundJob.Api.csproj" />
     </ItemGroup>
 </Project>

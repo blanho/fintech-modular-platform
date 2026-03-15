@@ -40,6 +40,10 @@
         <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Application\FinTech.Modules.Audit.Application.csproj"/>
         <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Infrastructure\FinTech.Modules.Audit.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Domain\FinTech.Modules.BackgroundJob.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Application\FinTech.Modules.BackgroundJob.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Infrastructure\FinTech.Modules.BackgroundJob.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\BackgroundJob\FinTech.Modules.BackgroundJob.Api\FinTech.Modules.BackgroundJob.Api.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <Using Include="Xunit"/>
