@@ -10,20 +10,20 @@ A production-ready fintech platform built with .NET 9 and React 19, following Do
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```mermaid
 graph TB
-    subgraph Client["🖥️ Client Layer"]
+    subgraph Client["Client Layer"]
         Web["React SPA<br/>Port 3000"]
         Mobile["Mobile App<br/>(Future)"]
     end
 
-    subgraph Gateway["🌐 API Gateway"]
+    subgraph Gateway["API Gateway"]
         Nginx["nginx<br/>Reverse Proxy"]
     end
 
-    subgraph API["⚙️ Backend API"]
+    subgraph API["Backend API"]
         Host["ASP.NET Core Host<br/>Port 8080"]
         
         subgraph Middleware["Middleware Pipeline"]
@@ -35,18 +35,18 @@ graph TB
         end
     end
 
-    subgraph Modules["📦 Domain Modules"]
-        Identity["🔐 Identity<br/>Auth & RBAC"]
-        Wallet["💰 Wallet<br/>Accounts"]
-        Transaction["💸 Transaction<br/>Payments"]
-        Ledger["📒 Ledger<br/>Immutable Log"]
-        Notification["🔔 Notification<br/>Alerts"]
-        Audit["📋 Audit<br/>Trail"]
-        Report["📊 Report<br/>Analytics"]
-        BackgroundJob["⏰ BackgroundJob<br/>Async Tasks"]
+    subgraph Modules["Domain Modules"]
+        Identity["Identity<br/>Auth & RBAC"]
+        Wallet["Wallet<br/>Accounts"]
+        Transaction["Transaction<br/>Payments"]
+        Ledger["Ledger<br/>Immutable Log"]
+        Notification["Notification<br/>Alerts"]
+        Audit["Audit<br/>Trail"]
+        Report["Report<br/>Analytics"]
+        BackgroundJob["BackgroundJob<br/>Async Tasks"]
     end
 
-    subgraph Infrastructure["🗄️ Infrastructure"]
+    subgraph Infrastructure["Infrastructure"]
         Postgres[(PostgreSQL 16<br/>Primary DB)]
         Redis[(Redis 7<br/>Cache)]
         RabbitMQ[(RabbitMQ 3.13<br/>Message Broker)]
@@ -77,7 +77,7 @@ graph TB
 
 ---
 
-## 🔄 Request Flow
+## Request Flow
 
 ```mermaid
 sequenceDiagram
@@ -128,32 +128,32 @@ sequenceDiagram
 
 ---
 
-## 📦 Module Architecture
+## Module Architecture
 
 Each module follows Clean Architecture with 4 layers:
 
 ```mermaid
 graph TB
     subgraph Module["Module (e.g., Wallet)"]
-        subgraph Presentation["🎯 Presentation"]
+        subgraph Presentation["Presentation"]
             Controller["WalletsController"]
         end
         
-        subgraph Application["⚙️ Application"]
+        subgraph Application["Application"]
             Commands["Commands<br/>CreateWallet<br/>FreezeWallet"]
             Queries["Queries<br/>GetWallet<br/>GetBalance"]
             Handlers["Handlers"]
             Validators["Validators"]
         end
         
-        subgraph Domain["🏛️ Domain"]
+        subgraph Domain["Domain"]
             Entities["Entities<br/>Wallet"]
             ValueObjects["Value Objects<br/>Currency, Money"]
             Events["Domain Events<br/>WalletCreated"]
             Interfaces["Interfaces<br/>IWalletRepository"]
         end
         
-        subgraph Infra["🗄️ Infrastructure"]
+        subgraph Infra["Infrastructure"]
             DbContext["WalletDbContext"]
             Repositories["WalletRepository"]
             Consumers["Event Consumers"]
@@ -178,7 +178,7 @@ graph TB
 
 ---
 
-## 🔐 Authentication Flow
+## Authentication Flow
 
 ```mermaid
 sequenceDiagram
@@ -221,15 +221,15 @@ sequenceDiagram
 
 ---
 
-## 🚀 Deployment Architecture
+## Deployment Architecture
 
 ```mermaid
 graph TB
-    subgraph Internet["☁️ Internet"]
-        Users["👥 Users"]
+    subgraph Internet["Internet"]
+        Users["Users"]
     end
 
-    subgraph Docker["🐳 Docker Compose"]
+    subgraph Docker["Docker Compose"]
         subgraph Frontend["Frontend Service"]
             Nginx["nginx:alpine<br/>:3000 → :80"]
             React["React Build<br/>Static Files"]
@@ -251,7 +251,7 @@ graph TB
         end
     end
 
-    subgraph Volumes["💾 Persistent Volumes"]
+    subgraph Volumes["Persistent Volumes"]
         PGV["postgres_data"]
         RDV["redis_data"]
         RMQV["rabbitmq_data"]
@@ -279,7 +279,7 @@ graph TB
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -366,7 +366,7 @@ erDiagram
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
@@ -384,7 +384,7 @@ erDiagram
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -431,14 +431,14 @@ docker compose --profile app up -d --build
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 fintech-modular-platform/
-├── 📁 docs/                          # Developer documentation
-├── 📁 infrastructure/
+├── docs/                             # Developer documentation
+├── infrastructure/
 │   └── docker/                       # Docker Compose + init scripts
-├── 📁 src/
+├── src/
 │   ├── Backend/
 │   │   ├── Host/FinTech.Api/         # ASP.NET Core host
 │   │   ├── Modules/                  # Domain modules (8)
@@ -452,12 +452,12 @@ fintech-modular-platform/
 │   │   │   └── BackgroundJob/
 │   │   └── Shared/                   # Shared kernel + infrastructure
 │   └── Frontend/                     # React SPA
-└── 📁 tests/                         # Unit, Integration, Architecture tests
+└── tests/                            # Unit, Integration, Architecture tests
 ```
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 | Guide | Description |
 |-------|-------------|
@@ -471,7 +471,7 @@ fintech-modular-platform/
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 | Module | Endpoint | Description |
 |--------|----------|-------------|
@@ -490,7 +490,7 @@ See [API Reference](docs/api-reference.md) for complete documentation.
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -505,12 +505,12 @@ cd src/Frontend && npm run build
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <p align="center">
-  Built with ❤️ using .NET 9 + React 19
+  Built with .NET 9 + React 19
 </p>
