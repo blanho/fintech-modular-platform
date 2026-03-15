@@ -1,4 +1,4 @@
-namespace FinTech.BuildingBlocks.Application.Contracts;
+namespace FinTech.Modules.Audit.Application.Interfaces;
 
 public interface IAuditService
 {

@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using FinTech.BuildingBlocks.Application.Contracts;
+using FinTech.Modules.Audit.Application.Interfaces;
 using FinTech.Modules.Audit.Domain.Entities;
 using Microsoft.Extensions.Logging;
 

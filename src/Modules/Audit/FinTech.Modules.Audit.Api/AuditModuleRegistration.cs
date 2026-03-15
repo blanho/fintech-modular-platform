@@ -1,6 +1,5 @@
 using System.Threading.Channels;
 using FinTech.BuildingBlocks.Application.Abstractions;
-using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.BuildingBlocks.Infrastructure.Services;
 using FinTech.Modules.Audit.Application.Interfaces;
 using FinTech.Modules.Audit.Application.Services;

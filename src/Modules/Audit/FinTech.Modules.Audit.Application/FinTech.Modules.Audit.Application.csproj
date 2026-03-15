@@ -5,5 +5,6 @@
     <ItemGroup>
         <ProjectReference Include="..\FinTech.Modules.Audit.Domain\FinTech.Modules.Audit.Domain.csproj"/>
         <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.Application\FinTech.BuildingBlocks.Application.csproj"/>
+        <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.EventBus\FinTech.BuildingBlocks.EventBus.csproj"/>
     </ItemGroup>
 </Project>

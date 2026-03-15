@@ -49,3 +49,14 @@ public sealed record SendPushNotificationIntegrationEvent(
     Guid UserId,
     string Title,
     string Body) : IntegrationEventBase;
+
+public sealed record AuditRequestedIntegrationEvent(
+    Guid? UserId,
+    string Action,
+    string ResourceType,
+    string? ResourceId,
+    bool IsSuccess,
+    string? ErrorMessage,
+    long DurationMs,
+    string? IpAddress,
+    string? UserAgent) : IntegrationEventBase;

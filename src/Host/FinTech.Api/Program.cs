@@ -8,6 +8,7 @@ using FinTech.BuildingBlocks.EventBus;
 using FinTech.BuildingBlocks.Infrastructure.Caching;
 using FinTech.Modules.Audit.Api;
 using FinTech.Modules.Audit.Application.Behaviors;
+using FinTech.Modules.Audit.Infrastructure.Consumers;
 using FinTech.Modules.BackgroundJob.Api;
 using FinTech.Modules.Identity.Api;
 using FinTech.Modules.Report.Api;
@@ -147,6 +148,7 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<UserPasswordChangedIntegrationEventConsumer>();
     x.AddConsumer<WalletCreatedIntegrationEventConsumer>();
     x.AddConsumer<BalanceChangedIntegrationEventConsumer>();
+    x.AddConsumer<AuditRequestedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

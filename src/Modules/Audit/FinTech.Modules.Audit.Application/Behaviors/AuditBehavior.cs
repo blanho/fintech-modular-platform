@@ -1,7 +1,8 @@
 using System.Diagnostics;
 using FinTech.BuildingBlocks.Application.Abstractions;
-using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.BuildingBlocks.Domain.Results;
+using FinTech.BuildingBlocks.EventBus;
+using FinTech.BuildingBlocks.EventBus.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -10,16 +11,16 @@ namespace FinTech.Modules.Audit.Application.Behaviors;
 public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly IAuditService _auditService;
+    private readonly IEventPublisher _eventPublisher;
     private readonly IRequestContext _requestContext;
     private readonly ILogger<AuditBehavior<TRequest, TResponse>> _logger;
 
     public AuditBehavior(
-        IAuditService auditService,
+        IEventPublisher eventPublisher,
         IRequestContext requestContext,
         ILogger<AuditBehavior<TRequest, TResponse>> logger)
     {
-        _auditService = auditService;
+        _eventPublisher = eventPublisher;
         _requestContext = requestContext;
         _logger = logger;
     }
@@ -85,7 +86,7 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     {
         try
         {
-            var entry = new AuditEntry(
+            var auditEvent = new AuditRequestedIntegrationEvent(
                 _requestContext.UserId,
                 action,
                 ExtractModuleName(),
@@ -94,14 +95,16 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
                 errorMessage,
                 durationMs,
                 _requestContext.IpAddress,
-                _requestContext.UserAgent,
-                _requestContext.CorrelationId);
+                _requestContext.UserAgent)
+            {
+                CorrelationId = Guid.TryParse(_requestContext.CorrelationId, out var cid) ? cid : Guid.NewGuid()
+            };
 
-            await _auditService.RecordAsync(entry, ct);
+            await _eventPublisher.PublishAsync(auditEvent, ct);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to record audit entry for {Action}", action);
+            _logger.LogWarning(ex, "Failed to publish audit event for {Action}", action);
         }
     }
 

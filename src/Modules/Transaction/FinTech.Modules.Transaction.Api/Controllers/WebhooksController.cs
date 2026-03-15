@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using FinTech.BuildingBlocks.Application.Abstractions;
 using FinTech.BuildingBlocks.Application.Contracts;
+using FinTech.BuildingBlocks.EventBus;
+using FinTech.BuildingBlocks.EventBus.Events;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -15,20 +17,20 @@ public class WebhooksController : ControllerBase
     private readonly IWebhookVerifier _webhookVerifier;
     private readonly IConfiguration _configuration;
     private readonly ILogger<WebhooksController> _logger;
-    private readonly IAuditService _auditService;
+    private readonly IEventPublisher _eventPublisher;
     private readonly IRequestContext _requestContext;
 
     public WebhooksController(
         IWebhookVerifier webhookVerifier,
         IConfiguration configuration,
         ILogger<WebhooksController> logger,
-        IAuditService auditService,
+        IEventPublisher eventPublisher,
         IRequestContext requestContext)
     {
         _webhookVerifier = webhookVerifier;
         _configuration = configuration;
         _logger = logger;
-        _auditService = auditService;
+        _eventPublisher = eventPublisher;
         _requestContext = requestContext;
     }
 
@@ -47,19 +49,9 @@ public class WebhooksController : ControllerBase
         if (string.IsNullOrEmpty(signature))
         {
             _logger.LogWarning("Webhook received without signature");
-
             stopwatch.Stop();
-            await _auditService.RecordAsync(new AuditEntry(
-                null,
-                "WebhookReceived",
-                "PaymentWebhook",
-                null,
-                false,
-                "Missing webhook signature",
-                stopwatch.ElapsedMilliseconds,
-                _requestContext.IpAddress,
-                _requestContext.UserAgent,
-                _requestContext.CorrelationId), ct);
+
+            await PublishAuditEventAsync(false, "Missing webhook signature", stopwatch.ElapsedMilliseconds, ct);
 
             return Unauthorized(new { error = "Missing webhook signature" });
         }
@@ -70,38 +62,37 @@ public class WebhooksController : ControllerBase
         if (!_webhookVerifier.Verify(payload, signature, secret))
         {
             _logger.LogWarning("Webhook signature verification failed");
-
             stopwatch.Stop();
-            await _auditService.RecordAsync(new AuditEntry(
-                null,
-                "WebhookReceived",
-                "PaymentWebhook",
-                null,
-                false,
-                "Invalid webhook signature",
-                stopwatch.ElapsedMilliseconds,
-                _requestContext.IpAddress,
-                _requestContext.UserAgent,
-                _requestContext.CorrelationId), ct);
+
+            await PublishAuditEventAsync(false, "Invalid webhook signature", stopwatch.ElapsedMilliseconds, ct);
 
             return Unauthorized(new { error = "Invalid webhook signature" });
         }
 
         _logger.LogInformation("Payment webhook received and verified. Payload length: {Length}", payload.Length);
-
         stopwatch.Stop();
-        await _auditService.RecordAsync(new AuditEntry(
+
+        await PublishAuditEventAsync(true, null, stopwatch.ElapsedMilliseconds, ct);
+
+        return Ok(new { received = true });
+    }
+
+    private async Task PublishAuditEventAsync(bool isSuccess, string? errorMessage, long durationMs, CancellationToken ct)
+    {
+        var auditEvent = new AuditRequestedIntegrationEvent(
             null,
             "WebhookReceived",
             "PaymentWebhook",
             null,
-            true,
-            null,
-            stopwatch.ElapsedMilliseconds,
+            isSuccess,
+            errorMessage,
+            durationMs,
             _requestContext.IpAddress,
-            _requestContext.UserAgent,
-            _requestContext.CorrelationId), ct);
+            _requestContext.UserAgent)
+        {
+            CorrelationId = Guid.TryParse(_requestContext.CorrelationId, out var cid) ? cid : Guid.NewGuid()
+        };
 
-        return Ok(new { received = true });
+        await _eventPublisher.PublishAsync(auditEvent, ct);
     }
 }
