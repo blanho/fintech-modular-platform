@@ -6,6 +6,8 @@ using FinTech.Api.Swagger;
 using FinTech.BuildingBlocks.Application.Behaviors;
 using FinTech.BuildingBlocks.EventBus;
 using FinTech.BuildingBlocks.Infrastructure.Caching;
+using FinTech.Modules.Audit.Api;
+using FinTech.Modules.Audit.Application.Behaviors;
 using FinTech.Modules.Identity.Api;
 using FinTech.Modules.Ledger.Api;
 using FinTech.Modules.Notification.Api;
@@ -41,7 +43,9 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(LedgerModuleRegistration).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(TransactionModuleRegistration).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(NotificationModuleRegistration).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(AuditModuleRegistration).Assembly);
 
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuditBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
@@ -51,6 +55,7 @@ builder.Services.AddLedgerModule(builder.Configuration);
 builder.Services.AddWalletModule(builder.Configuration);
 builder.Services.AddTransactionModule(builder.Configuration);
 builder.Services.AddNotificationModule(builder.Configuration);
+builder.Services.AddAuditModule(builder.Configuration);
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
                 ?? throw new InvalidOperationException("JWT Secret is not configured");
@@ -95,6 +100,7 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? new[] { "http://localhost:5173" };

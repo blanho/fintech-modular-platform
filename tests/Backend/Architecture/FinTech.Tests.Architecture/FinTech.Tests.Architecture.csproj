@@ -36,6 +36,10 @@
         <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Application\FinTech.Modules.Notification.Application.csproj"/>
         <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Infrastructure\FinTech.Modules.Notification.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\..\..\src\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Domain\FinTech.Modules.Audit.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Application\FinTech.Modules.Audit.Application.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Infrastructure\FinTech.Modules.Audit.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\..\src\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <Using Include="Xunit"/>

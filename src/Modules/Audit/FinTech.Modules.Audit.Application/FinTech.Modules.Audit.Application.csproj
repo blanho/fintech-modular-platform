@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.Audit.Application</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Audit.Domain\FinTech.Modules.Audit.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\BuildingBlocks\FinTech.BuildingBlocks.Application\FinTech.BuildingBlocks.Application.csproj"/>
+    </ItemGroup>
+</Project>

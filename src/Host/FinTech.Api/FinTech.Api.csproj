@@ -19,5 +19,6 @@
         <ProjectReference Include="..\..\Modules\Ledger\FinTech.Modules.Ledger.Api\FinTech.Modules.Ledger.Api.csproj"/>
         <ProjectReference Include="..\..\Modules\Transaction\FinTech.Modules.Transaction.Api\FinTech.Modules.Transaction.Api.csproj"/>
         <ProjectReference Include="..\..\Modules\Notification\FinTech.Modules.Notification.Api\FinTech.Modules.Notification.Api.csproj"/>
+        <ProjectReference Include="..\..\Modules\Audit\FinTech.Modules.Audit.Api\FinTech.Modules.Audit.Api.csproj"/>
     </ItemGroup>
 </Project>

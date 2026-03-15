@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>FinTech.Modules.Audit.Api</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\FinTech.Modules.Audit.Application\FinTech.Modules.Audit.Application.csproj"/>
+        <ProjectReference Include="..\FinTech.Modules.Audit.Infrastructure\FinTech.Modules.Audit.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>
