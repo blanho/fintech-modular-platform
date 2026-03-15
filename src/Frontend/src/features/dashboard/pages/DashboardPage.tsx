@@ -2,45 +2,25 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Wallet, ArrowLeftRight, TrendingUp, Activity } from 'lucide-react';
+import { Wallet, ArrowLeftRight, TrendingUp, Activity, Users, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { StatCard } from '@/shared/components';
 import { useDashboardStats } from '../hooks/useDashboard';
 import { BalanceChart } from '../components/BalanceChart';
 import { RecentTransactions } from '../components/RecentTransactions';
-
-const mockStats = {
-  totalBalance: 125_430.50,
-  totalWallets: 4,
-  pendingTransactions: 3,
-  monthlyVolume: 45_280.00,
-  recentTransactions: [
-    { id: '1', walletId: 'w1', type: 'Deposit' as const, amount: 5000, currency: 'USD', status: 'Completed' as const, description: 'Wire transfer', referenceId: 'ref-1', createdAt: '2026-03-14T10:30:00Z' },
-    { id: '2', walletId: 'w1', type: 'Transfer' as const, amount: 1200, currency: 'USD', status: 'Completed' as const, description: 'To savings', referenceId: 'ref-2', createdAt: '2026-03-13T14:20:00Z' },
-    { id: '3', walletId: 'w2', type: 'Withdrawal' as const, amount: 800, currency: 'USD', status: 'Pending' as const, description: 'ATM withdrawal', referenceId: 'ref-3', createdAt: '2026-03-13T09:15:00Z' },
-    { id: '4', walletId: 'w1', type: 'Deposit' as const, amount: 15000, currency: 'USD', status: 'Completed' as const, description: 'Salary', referenceId: 'ref-4', createdAt: '2026-03-12T08:00:00Z' },
-    { id: '5', walletId: 'w3', type: 'Transfer' as const, amount: 3500, currency: 'EUR', status: 'Failed' as const, description: 'International', referenceId: 'ref-5', createdAt: '2026-03-11T16:45:00Z' },
-  ],
-  balanceHistory: [
-    { date: 'Jan', balance: 85000 },
-    { date: 'Feb', balance: 92000 },
-    { date: 'Mar', balance: 88000 },
-    { date: 'Apr', balance: 95000 },
-    { date: 'May', balance: 102000 },
-    { date: 'Jun', balance: 98000 },
-    { date: 'Jul', balance: 105000 },
-    { date: 'Aug', balance: 110000 },
-    { date: 'Sep', balance: 108000 },
-    { date: 'Oct', balance: 115000 },
-    { date: 'Nov', balance: 120000 },
-    { date: 'Dec', balance: 125430 },
-  ],
-};
+import { useTransactions } from '@/features/transactions/hooks/useTransactions';
 
 export function DashboardPage() {
   const navigate = useNavigate();
-  const { data, isLoading } = useDashboardStats();
-  const stats = data ?? mockStats;
+  const { data: stats, isLoading } = useDashboardStats();
+  const { data: txData } = useTransactions({ page: 1, pageSize: 5 });
+
+  const chartData = (stats?.volumeTrend ?? []).map((p) => ({
+    date: new Date(p.timestamp).toLocaleDateString('en-US', { month: 'short' }),
+    balance: p.value,
+  }));
+
+  const recentTransactions = txData?.items ?? [];
 
   return (
     <Box>
@@ -72,36 +52,54 @@ export function DashboardPage() {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Total Balance"
-            value={`$${stats.totalBalance.toLocaleString()}`}
+            title="Total Volume"
+            value={`$${(stats?.totalVolume ?? 0).toLocaleString()}`}
             icon={<TrendingUp size={22} />}
-            trend={{ value: 12.5, label: 'from last month' }}
             loading={isLoading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
             title="Active Wallets"
-            value={String(stats.totalWallets)}
+            value={String(stats?.activeWallets ?? 0)}
             icon={<Wallet size={22} />}
             loading={isLoading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Pending"
-            value={String(stats.pendingTransactions)}
-            subtitle="transactions awaiting"
+            title="Total Transactions"
+            value={String(stats?.totalTransactions ?? 0)}
+            subtitle={`${stats?.failedTransactions ?? 0} failed`}
             icon={<Activity size={22} />}
             loading={isLoading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            title="Monthly Volume"
-            value={`$${stats.monthlyVolume.toLocaleString()}`}
+            title="Success Rate"
+            value={`${((stats?.successRate ?? 0) * 100).toFixed(1)}%`}
+            icon={<CheckCircle size={22} />}
+            loading={isLoading}
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <StatCard
+            title="Active Users"
+            value={String(stats?.activeUsers ?? 0)}
+            subtitle={`${stats?.newUsersToday ?? 0} new today`}
+            icon={<Users size={22} />}
+            loading={isLoading}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <StatCard
+            title="Avg Transaction"
+            value={`$${(stats?.averageTransactionValue ?? 0).toLocaleString()}`}
             icon={<ArrowLeftRight size={22} />}
-            trend={{ value: -3.2, label: 'from last month' }}
             loading={isLoading}
           />
         </Grid>
@@ -109,10 +107,10 @@ export function DashboardPage() {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 8 }}>
-          <BalanceChart data={stats.balanceHistory} />
+          <BalanceChart data={chartData} />
         </Grid>
         <Grid size={{ xs: 12, lg: 4 }}>
-          <RecentTransactions transactions={stats.recentTransactions.slice(0, 5)} />
+          <RecentTransactions transactions={recentTransactions.slice(0, 5)} />
         </Grid>
       </Grid>
     </Box>

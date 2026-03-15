@@ -1,19 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionApi } from '../api/transactionApi';
-import type { DepositRequest, WithdrawRequest, TransferRequest } from '@/shared/types';
-
-interface TransactionFilters {
-  page?: number;
-  pageSize?: number;
-  type?: string;
-  status?: string;
-  walletId?: string;
-}
+import type { TransactionFilters, DepositRequest, WithdrawRequest, TransferRequest } from '@/shared/types';
 
 export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: ['transactions', filters],
     queryFn: () => transactionApi.list(filters),
+  });
+}
+
+export function useTransaction(id: string) {
+  return useQuery({
+    queryKey: ['transactions', id],
+    queryFn: () => transactionApi.getById(id),
+    enabled: Boolean(id),
   });
 }
 

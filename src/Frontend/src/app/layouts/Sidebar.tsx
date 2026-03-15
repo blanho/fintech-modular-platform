@@ -16,25 +16,41 @@ import {
   ShieldCheck,
   Bell,
   FileBarChart,
+  Settings,
 } from 'lucide-react';
 import { useSidebarStore } from '@/shared/stores';
+import { usePermissions, type Permission } from '@/shared/hooks/usePermission';
+import type { LucideIcon } from 'lucide-react';
 
 const DRAWER_WIDTH = 260;
 
-const navItems = [
+interface NavItem {
+  label: string;
+  path: string;
+  icon: LucideIcon;
+  permission?: Permission;
+}
+
+const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Wallets', path: '/wallets', icon: Wallet },
   { label: 'Transactions', path: '/transactions', icon: ArrowLeftRight },
   { label: 'Ledger', path: '/ledger', icon: BookOpen },
-  { label: 'Audit Log', path: '/audit', icon: ShieldCheck },
+  { label: 'Audit Log', path: '/audit', icon: ShieldCheck, permission: 'audit:read' },
   { label: 'Notifications', path: '/notifications', icon: Bell },
-  { label: 'Reports', path: '/reports', icon: FileBarChart },
+  { label: 'Reports', path: '/reports', icon: FileBarChart, permission: 'reports:read' },
+  { label: 'Settings', path: '/settings', icon: Settings },
 ];
 
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isOpen = useSidebarStore((s) => s.isOpen);
+  const { hasPermission } = usePermissions();
+
+  const visibleItems = navItems.filter(
+    (item) => !item.permission || hasPermission(item.permission),
+  );
 
   return (
     <Drawer
@@ -76,7 +92,7 @@ export function Sidebar() {
       <Divider />
 
       <List sx={{ px: 1.5, pt: 2, flex: 1 }}>
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           return (
             <ListItemButton
@@ -99,7 +115,7 @@ export function Sidebar() {
               </ListItemIcon>
               <ListItemText
                 primary={item.label}
-                primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}
+                slotProps={{ primary: { fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 } }}
               />
             </ListItemButton>
           );

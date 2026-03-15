@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -12,17 +13,10 @@ import { Plus, Wallet as WalletIcon } from 'lucide-react';
 import { alpha } from '@mui/material/styles';
 import { useWallets } from '../hooks/useWallets';
 import { CreateWalletDialog } from '../components/CreateWalletDialog';
-import { EmptyState } from '@/shared/components';
+import { EmptyState, StatusChip } from '@/shared/components';
 import type { Wallet } from '@/shared/types';
 
-const mockWallets: Wallet[] = [
-  { id: '1', name: 'Main Account', currency: 'USD', balance: 85_240.50, createdAt: '2026-01-15T00:00:00Z', updatedAt: '2026-03-14T00:00:00Z' },
-  { id: '2', name: 'Savings', currency: 'USD', balance: 32_100.00, createdAt: '2026-02-01T00:00:00Z', updatedAt: '2026-03-14T00:00:00Z' },
-  { id: '3', name: 'Euro Account', currency: 'EUR', balance: 5_680.75, createdAt: '2026-02-20T00:00:00Z', updatedAt: '2026-03-12T00:00:00Z' },
-  { id: '4', name: 'Bitcoin Wallet', currency: 'BTC', balance: 2.3415, createdAt: '2026-03-01T00:00:00Z', updatedAt: '2026-03-14T00:00:00Z' },
-];
-
-function WalletCard({ wallet }: { readonly wallet: Wallet }) {
+function WalletCard({ wallet, onClick }: { readonly wallet: Wallet; readonly onClick: () => void }) {
   const isCrypto = wallet.currency === 'BTC' || wallet.currency === 'ETH';
   const formatted = isCrypto
     ? `${wallet.balance.toFixed(4)} ${wallet.currency}`
@@ -30,7 +24,7 @@ function WalletCard({ wallet }: { readonly wallet: Wallet }) {
 
   return (
     <Card>
-      <CardActionArea sx={{ cursor: 'pointer' }}>
+      <CardActionArea onClick={onClick} sx={{ cursor: 'pointer' }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box
@@ -43,7 +37,10 @@ function WalletCard({ wallet }: { readonly wallet: Wallet }) {
             >
               <WalletIcon size={20} />
             </Box>
-            <Chip label={wallet.currency} size="small" variant="outlined" />
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <StatusChip status={wallet.status} />
+              <Chip label={wallet.currency} size="small" variant="outlined" />
+            </Box>
           </Box>
           <Typography variant="body2" sx={{ mb: 0.5 }}>
             {wallet.name}
@@ -52,7 +49,7 @@ function WalletCard({ wallet }: { readonly wallet: Wallet }) {
             {formatted}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Updated {new Date(wallet.updatedAt).toLocaleDateString()}
+            Updated {wallet.updatedAt ? new Date(wallet.updatedAt).toLocaleDateString() : 'N/A'}
           </Typography>
         </CardContent>
       </CardActionArea>
@@ -61,9 +58,10 @@ function WalletCard({ wallet }: { readonly wallet: Wallet }) {
 }
 
 export function WalletsPage() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { data, isLoading } = useWallets();
-  const wallets = data ?? mockWallets;
+  const wallets = data?.items ?? [];
 
   return (
     <Box>
@@ -107,7 +105,7 @@ export function WalletsPage() {
         <Grid container spacing={3}>
           {wallets.map((w) => (
             <Grid key={w.id} size={{ xs: 12, sm: 6, lg: 3 }}>
-              <WalletCard wallet={w} />
+              <WalletCard wallet={w} onClick={() => navigate(`/wallets/${w.id}`)} />
             </Grid>
           ))}
         </Grid>

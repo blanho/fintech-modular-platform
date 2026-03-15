@@ -3,31 +3,50 @@ export type TransactionStatus = 'Pending' | 'Completed' | 'Failed' | 'Cancelled'
 
 export interface Transaction {
   id: string;
-  walletId: string;
+  sourceWalletId: string | null;
+  targetWalletId: string | null;
   type: TransactionType;
   amount: number;
   currency: string;
   status: TransactionStatus;
-  description: string;
-  referenceId: string;
+  description: string | null;
+  failureReason: string | null;
+  idempotencyKey: string | null;
   createdAt: string;
+  completedAt: string | null;
+}
+
+export interface TransactionFilters {
+  page?: number;
+  pageSize?: number;
+  type?: string;
+  status?: string;
+  walletId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface DepositRequest {
   walletId: string;
-  amount: number;
+  amount: string;
+  currency: string;
   description?: string;
+  idempotencyKey: string;
 }
 
 export interface WithdrawRequest {
   walletId: string;
-  amount: number;
+  amount: string;
+  currency: string;
   description?: string;
+  idempotencyKey: string;
 }
 
 export interface TransferRequest {
   sourceWalletId: string;
-  destinationWalletId: string;
-  amount: number;
+  targetWalletId: string;
+  amount: string;
+  currency: string;
   description?: string;
+  idempotencyKey: string;
 }

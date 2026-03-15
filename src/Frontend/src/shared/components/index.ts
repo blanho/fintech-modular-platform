@@ -4,3 +4,5 @@ export { LoadingScreen } from './LoadingScreen';
 export { EmptyState } from './EmptyState';
 export { StatCard } from './StatCard';
 export { StatusChip } from './StatusChip';
+export { PermissionGate } from './PermissionGate';
+export { ConfirmDialog } from './ConfirmDialog';

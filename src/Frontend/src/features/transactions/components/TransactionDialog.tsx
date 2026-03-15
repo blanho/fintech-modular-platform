@@ -9,20 +9,22 @@ import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import { useState } from 'react';
+import Alert from '@mui/material/Alert';
+import { useState, useMemo } from 'react';
 import { useDeposit, useWithdraw, useTransfer } from '../hooks/useTransactions';
 import { useWallets } from '@/features/wallets/hooks/useWallets';
+import type { Wallet } from '@/shared/types';
 
-interface DepositForm {
+interface DepositWithdrawForm {
   walletId: string;
-  amount: number;
+  amount: string;
   description: string;
 }
 
-interface TransferForm {
+interface TransferFormData {
   sourceWalletId: string;
-  destinationWalletId: string;
-  amount: number;
+  targetWalletId: string;
+  amount: string;
   description: string;
 }
 
@@ -31,53 +33,84 @@ interface TransactionDialogProps {
   readonly onClose: () => void;
 }
 
+function getWalletCurrency(wallets: Wallet[], walletId: string): string {
+  return wallets.find((w) => w.id === walletId)?.currency ?? 'USD';
+}
+
 export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
   const [tab, setTab] = useState(0);
-  const { data: wallets } = useWallets();
+  const { data: walletData } = useWallets();
   const deposit = useDeposit();
   const withdraw = useWithdraw();
   const transfer = useTransfer();
 
-  const depositForm = useForm<DepositForm>({
-    defaultValues: { walletId: '', amount: 0, description: '' },
+  const walletOptions = useMemo(
+    () => (walletData?.items ?? []).filter((w) => w.status === 'Active'),
+    [walletData],
+  );
+
+  const depositForm = useForm<DepositWithdrawForm>({
+    defaultValues: { walletId: '', amount: '', description: '' },
   });
 
-  const transferForm = useForm<TransferForm>({
-    defaultValues: { sourceWalletId: '', destinationWalletId: '', amount: 0, description: '' },
+  const transferForm = useForm<TransferFormData>({
+    defaultValues: { sourceWalletId: '', targetWalletId: '', amount: '', description: '' },
   });
 
-  const handleDeposit = (data: DepositForm) => {
-    deposit.mutate(data, {
-      onSuccess: () => {
-        depositForm.reset();
-        onClose();
-      },
-    });
+  const handleClose = () => {
+    depositForm.reset();
+    transferForm.reset();
+    onClose();
   };
 
-  const handleWithdraw = (data: DepositForm) => {
-    withdraw.mutate(data, {
-      onSuccess: () => {
-        depositForm.reset();
-        onClose();
+  const handleDeposit = (data: DepositWithdrawForm) => {
+    const currency = getWalletCurrency(walletOptions, data.walletId);
+    deposit.mutate(
+      {
+        walletId: data.walletId,
+        amount: data.amount,
+        currency,
+        description: data.description || undefined,
+        idempotencyKey: crypto.randomUUID(),
       },
-    });
+      { onSuccess: handleClose },
+    );
   };
 
-  const handleTransfer = (data: TransferForm) => {
-    transfer.mutate(data, {
-      onSuccess: () => {
-        transferForm.reset();
-        onClose();
+  const handleWithdraw = (data: DepositWithdrawForm) => {
+    const currency = getWalletCurrency(walletOptions, data.walletId);
+    withdraw.mutate(
+      {
+        walletId: data.walletId,
+        amount: data.amount,
+        currency,
+        description: data.description || undefined,
+        idempotencyKey: crypto.randomUUID(),
       },
-    });
+      { onSuccess: handleClose },
+    );
+  };
+
+  const handleTransfer = (data: TransferFormData) => {
+    const currency = getWalletCurrency(walletOptions, data.sourceWalletId);
+    transfer.mutate(
+      {
+        sourceWalletId: data.sourceWalletId,
+        targetWalletId: data.targetWalletId,
+        amount: data.amount,
+        currency,
+        description: data.description || undefined,
+        idempotencyKey: crypto.randomUUID(),
+      },
+      { onSuccess: handleClose },
+    );
   };
 
   const isPending = deposit.isPending || withdraw.isPending || transfer.isPending;
-  const walletOptions = wallets ?? [];
+  const error = deposit.error ?? withdraw.error ?? transfer.error;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>New Transaction</DialogTitle>
       <DialogContent>
         <Tabs
@@ -89,6 +122,12 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
           <Tab label="Withdraw" sx={{ cursor: 'pointer' }} />
           <Tab label="Transfer" sx={{ cursor: 'pointer' }} />
         </Tabs>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {(error as Error).message ?? 'Transaction failed'}
+          </Alert>
+        )}
 
         {(tab === 0 || tab === 1) && (
           <Box component="form">
@@ -116,13 +155,16 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
             />
             <TextField
               {...depositForm.register('amount', {
-                valueAsNumber: true,
                 required: 'Amount is required',
-                min: { value: 0.01, message: 'Must be positive' },
+                validate: (v) => {
+                  const num = Number(v);
+                  if (Number.isNaN(num) || num <= 0) return 'Must be a positive number';
+                  return true;
+                },
               })}
               label="Amount"
-              type="number"
               fullWidth
+              placeholder="0.00"
               error={Boolean(depositForm.formState.errors.amount)}
               helperText={depositForm.formState.errors.amount?.message}
               sx={{ mb: 2.5 }}
@@ -162,9 +204,13 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
               )}
             />
             <Controller
-              name="destinationWalletId"
+              name="targetWalletId"
               control={transferForm.control}
-              rules={{ required: 'Select destination wallet' }}
+              rules={{
+                required: 'Select destination wallet',
+                validate: (v) =>
+                  v !== transferForm.getValues('sourceWalletId') || 'Source and target wallet must be different',
+              }}
               render={({ field, fieldState }) => (
                 <TextField
                   {...field}
@@ -185,13 +231,16 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
             />
             <TextField
               {...transferForm.register('amount', {
-                valueAsNumber: true,
                 required: 'Amount is required',
-                min: { value: 0.01, message: 'Must be positive' },
+                validate: (v) => {
+                  const num = Number(v);
+                  if (Number.isNaN(num) || num <= 0) return 'Must be a positive number';
+                  return true;
+                },
               })}
               label="Amount"
-              type="number"
               fullWidth
+              placeholder="0.00"
               error={Boolean(transferForm.formState.errors.amount)}
               helperText={transferForm.formState.errors.amount?.message}
               sx={{ mb: 2.5 }}
@@ -207,7 +256,7 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} sx={{ cursor: 'pointer' }}>
+        <Button onClick={handleClose} sx={{ cursor: 'pointer' }}>
           Cancel
         </Button>
         <Button

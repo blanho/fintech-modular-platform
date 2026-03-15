@@ -11,6 +11,7 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   login: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
+  updateProfile: (firstName: string, lastName: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -26,6 +27,10 @@ export const useAuthStore = create<AuthState>()(
         set({ user, accessToken, refreshToken, isAuthenticated: true }),
       logout: () =>
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
+      updateProfile: (firstName, lastName) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, firstName, lastName } : null,
+        })),
     }),
     { name: 'fintech-auth' },
   ),

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -18,7 +19,7 @@ import { Plus } from 'lucide-react';
 import { StatusChip } from '@/shared/components';
 import { useTransactions } from '../hooks/useTransactions';
 import { TransactionDialog } from '../components/TransactionDialog';
-import type { Transaction, TransactionType, TransactionStatus } from '@/shared/types';
+import type { TransactionType, TransactionStatus } from '@/shared/types';
 
 const typeColors: Record<string, 'success' | 'error' | 'info'> = {
   Deposit: 'success',
@@ -26,33 +27,31 @@ const typeColors: Record<string, 'success' | 'error' | 'info'> = {
   Transfer: 'info',
 };
 
-const mockTransactions: Transaction[] = [
-  { id: '1', walletId: 'w1', type: 'Deposit', amount: 5000, currency: 'USD', status: 'Completed', description: 'Wire transfer', referenceId: 'ref-1', createdAt: '2026-03-14T10:30:00Z' },
-  { id: '2', walletId: 'w1', type: 'Transfer', amount: 1200, currency: 'USD', status: 'Completed', description: 'To savings', referenceId: 'ref-2', createdAt: '2026-03-13T14:20:00Z' },
-  { id: '3', walletId: 'w2', type: 'Withdrawal', amount: 800, currency: 'USD', status: 'Pending', description: 'ATM withdrawal', referenceId: 'ref-3', createdAt: '2026-03-13T09:15:00Z' },
-  { id: '4', walletId: 'w1', type: 'Deposit', amount: 15000, currency: 'USD', status: 'Completed', description: 'Salary', referenceId: 'ref-4', createdAt: '2026-03-12T08:00:00Z' },
-  { id: '5', walletId: 'w3', type: 'Transfer', amount: 3500, currency: 'EUR', status: 'Failed', description: 'International', referenceId: 'ref-5', createdAt: '2026-03-11T16:45:00Z' },
-  { id: '6', walletId: 'w1', type: 'Deposit', amount: 2000, currency: 'USD', status: 'Completed', description: 'Freelance payment', referenceId: 'ref-6', createdAt: '2026-03-10T11:30:00Z' },
-  { id: '7', walletId: 'w2', type: 'Withdrawal', amount: 450, currency: 'USD', status: 'Completed', description: 'Bill payment', referenceId: 'ref-7', createdAt: '2026-03-09T15:00:00Z' },
-  { id: '8', walletId: 'w1', type: 'Transfer', amount: 10000, currency: 'USD', status: 'Completed', description: 'Investment', referenceId: 'ref-8', createdAt: '2026-03-08T09:00:00Z' },
-];
-
 export function TransactionsPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialWalletId = searchParams.get('walletId') ?? '';
   const [dialogOpen, setDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [typeFilter, setTypeFilter] = useState<TransactionType | ''>('');
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | ''>('');
+  const [walletIdFilter, setWalletIdFilter] = useState(initialWalletId);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  const { data } = useTransactions({
+  const { data, isLoading } = useTransactions({
     page: page + 1,
     pageSize: rowsPerPage,
     type: typeFilter || undefined,
     status: statusFilter || undefined,
+    walletId: walletIdFilter || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
-  const transactions = data?.items ?? mockTransactions;
-  const totalCount = data?.totalCount ?? mockTransactions.length;
+  const transactions = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
 
   return (
     <Box>
@@ -72,13 +71,13 @@ export function TransactionsPage() {
       </Box>
 
       <Card sx={{ mb: 3 }}>
-        <CardContent sx={{ display: 'flex', gap: 2, p: 2, '&:last-child': { pb: 2 } }}>
+        <CardContent sx={{ display: 'flex', gap: 2, p: 2, '&:last-child': { pb: 2 }, flexWrap: 'wrap' }}>
           <TextField
             select
             label="Type"
             size="small"
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as TransactionType | '')}
+            onChange={(e) => { setTypeFilter(e.target.value as TransactionType | ''); setPage(0); }}
             sx={{ minWidth: 140 }}
           >
             <MenuItem value="">All Types</MenuItem>
@@ -91,7 +90,7 @@ export function TransactionsPage() {
             label="Status"
             size="small"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TransactionStatus | '')}
+            onChange={(e) => { setStatusFilter(e.target.value as TransactionStatus | ''); setPage(0); }}
             sx={{ minWidth: 140 }}
           >
             <MenuItem value="">All Statuses</MenuItem>
@@ -100,6 +99,32 @@ export function TransactionsPage() {
             <MenuItem value="Failed">Failed</MenuItem>
             <MenuItem value="Cancelled">Cancelled</MenuItem>
           </TextField>
+          <TextField
+            label="Wallet ID"
+            size="small"
+            value={walletIdFilter}
+            onChange={(e) => { setWalletIdFilter(e.target.value); setPage(0); }}
+            placeholder="Filter by wallet"
+            sx={{ minWidth: 200 }}
+          />
+          <TextField
+            label="Start Date"
+            size="small"
+            type="date"
+            value={startDate}
+            onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: 160 }}
+          />
+          <TextField
+            label="End Date"
+            size="small"
+            type="date"
+            value={endDate}
+            onChange={(e) => { setEndDate(e.target.value); setPage(0); }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: 160 }}
+          />
         </CardContent>
       </Card>
 
@@ -113,12 +138,24 @@ export function TransactionsPage() {
                 <TableCell>Description</TableCell>
                 <TableCell align="right">Amount</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Reference</TableCell>
+                <TableCell>Idempotency Key</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
+              {!isLoading && transactions.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                    <Typography color="text.secondary">No transactions found</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
               {transactions.map((tx) => (
-                <TableRow key={tx.id} hover>
+                <TableRow
+                  key={tx.id}
+                  hover
+                  onClick={() => navigate(`/transactions/${tx.id}`)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>
                     <Typography variant="body2">
                       {new Date(tx.createdAt).toLocaleDateString()}
@@ -135,7 +172,7 @@ export function TransactionsPage() {
                       variant="outlined"
                     />
                   </TableCell>
-                  <TableCell>{tx.description}</TableCell>
+                  <TableCell>{tx.description ?? '-'}</TableCell>
                   <TableCell align="right">
                     <Typography
                       sx={{
@@ -144,7 +181,7 @@ export function TransactionsPage() {
                         color: tx.type === 'Withdrawal' ? 'error.main' : 'success.main',
                       }}
                     >
-                      {tx.type === 'Withdrawal' ? '-' : '+'}${tx.amount.toLocaleString()}
+                      {tx.type === 'Withdrawal' ? '-' : '+'}{tx.amount.toLocaleString()} {tx.currency}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -152,7 +189,7 @@ export function TransactionsPage() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                      {tx.referenceId}
+                      {tx.idempotencyKey ? tx.idempotencyKey.slice(0, 8) + '...' : '-'}
                     </Typography>
                   </TableCell>
                 </TableRow>

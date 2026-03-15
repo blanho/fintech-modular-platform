@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axio
 import { useAuthStore } from '@/shared/stores/authStore';
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -13,6 +13,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers['X-Correlation-ID'] = crypto.randomUUID();
   return config;
 });
 
@@ -25,7 +26,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = useAuthStore.getState().refreshToken;
         if (!refreshToken) throw new Error('No refresh token');
-        const { data } = await axios.post('/api/identity/refresh', { refreshToken });
+        const { data } = await axios.post('/api/v1/auth/refresh', { refreshToken });
         useAuthStore.getState().setTokens(data.accessToken, data.refreshToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(original);

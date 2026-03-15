@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -6,49 +7,52 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import TablePagination from '@mui/material/TablePagination';
 import { alpha } from '@mui/material/styles';
-import { CheckCheck, Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { notificationApi } from '../api/notificationApi';
+import { CheckCheck, ArrowLeftRight, ShieldCheck, Monitor, Megaphone, Settings } from 'lucide-react';
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '../hooks/useNotifications';
 import { EmptyState } from '@/shared/components';
-import type { Notification } from '@/shared/types';
+import type { NotificationCategory } from '@/shared/types';
 
-const iconMap = {
-  Info: Info,
-  Success: CheckCircle,
-  Warning: AlertTriangle,
-  Error: XCircle,
+const categoryIconMap: Record<NotificationCategory, typeof ArrowLeftRight> = {
+  Transaction: ArrowLeftRight,
+  Security: ShieldCheck,
+  System: Monitor,
+  Marketing: Megaphone,
 };
 
-const colorMap: Record<string, string> = {
-  Info: '#3B82F6',
-  Success: '#22C55E',
-  Warning: '#F59E0B',
-  Error: '#EF4444',
+const categoryColorMap: Record<NotificationCategory, string> = {
+  Transaction: '#22C55E',
+  Security: '#F59E0B',
+  System: '#3B82F6',
+  Marketing: '#A855F7',
 };
-
-const mockNotifications: Notification[] = [
-  { id: '1', userId: 'u1', title: 'Deposit Completed', message: 'Your deposit of $5,000 has been processed.', type: 'Success', isRead: false, createdAt: '2026-03-14T10:30:00Z' },
-  { id: '2', userId: 'u1', title: 'Transfer Failed', message: 'International transfer of $3,500 EUR failed.', type: 'Error', isRead: false, createdAt: '2026-03-11T16:45:00Z' },
-  { id: '3', userId: 'u1', title: 'Security Alert', message: 'New login detected from a new device.', type: 'Warning', isRead: true, createdAt: '2026-03-10T08:00:00Z' },
-  { id: '4', userId: 'u1', title: 'Monthly Report Ready', message: 'Your February financial report is available.', type: 'Info', isRead: true, createdAt: '2026-03-01T09:00:00Z' },
-];
 
 export function NotificationsPage() {
-  const qc = useQueryClient();
-  const { data } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: notificationApi.list,
+  const navigate = useNavigate();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [readFilter, setReadFilter] = useState<string>('');
+
+  const { data, isLoading } = useNotifications({
+    page: page + 1,
+    pageSize: rowsPerPage,
+    type: categoryFilter || undefined,
+    isRead: readFilter === '' ? undefined : readFilter === 'true',
   });
 
-  const markAllRead = useMutation({
-    mutationFn: notificationApi.markAllRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
-  });
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
 
-  const notifications = data ?? mockNotifications;
+  const notifications = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -60,55 +64,102 @@ export function NotificationsPage() {
             {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
           </Typography>
         </Box>
-        {unreadCount > 0 && (
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Button
             variant="outlined"
-            startIcon={<CheckCheck size={16} />}
-            onClick={() => markAllRead.mutate()}
+            startIcon={<Settings size={16} />}
+            onClick={() => navigate('/notifications/preferences')}
             sx={{ cursor: 'pointer' }}
           >
-            Mark All Read
+            Preferences
           </Button>
-        )}
+          {unreadCount > 0 && (
+            <Button
+              variant="outlined"
+              startIcon={<CheckCheck size={16} />}
+              onClick={() => markAllRead.mutate()}
+              disabled={markAllRead.isPending}
+              sx={{ cursor: 'pointer' }}
+            >
+              Mark All Read
+            </Button>
+          )}
+        </Box>
       </Box>
 
-      {notifications.length === 0 ? (
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ display: 'flex', gap: 2, p: 2, '&:last-child': { pb: 2 } }}>
+          <TextField
+            select
+            label="Category"
+            size="small"
+            value={categoryFilter}
+            onChange={(e) => { setCategoryFilter(e.target.value); setPage(0); }}
+            sx={{ minWidth: 160 }}
+          >
+            <MenuItem value="">All Categories</MenuItem>
+            <MenuItem value="Transaction">Transaction</MenuItem>
+            <MenuItem value="Security">Security</MenuItem>
+            <MenuItem value="System">System</MenuItem>
+            <MenuItem value="Marketing">Marketing</MenuItem>
+          </TextField>
+          <TextField
+            select
+            label="Read Status"
+            size="small"
+            value={readFilter}
+            onChange={(e) => { setReadFilter(e.target.value); setPage(0); }}
+            sx={{ minWidth: 140 }}
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="false">Unread</MenuItem>
+            <MenuItem value="true">Read</MenuItem>
+          </TextField>
+        </CardContent>
+      </Card>
+
+      {!isLoading && notifications.length === 0 ? (
         <EmptyState title="No notifications" description="You're all caught up." />
       ) : (
         <Card>
           <CardContent sx={{ p: 0 }}>
             <List disablePadding>
               {notifications.map((n, idx) => {
-                const IconComponent = iconMap[n.type];
+                const IconComponent = categoryIconMap[n.category] ?? Monitor;
+                const iconColor = categoryColorMap[n.category] ?? '#3B82F6';
                 return (
                   <Box key={n.id}>
-                    <ListItem
-                      sx={{
-                        py: 2,
-                        px: 3,
-                        backgroundColor: n.isRead ? 'transparent' : (t) => alpha(t.palette.primary.main, 0.04),
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 44, color: colorMap[n.type] }}>
-                        <IconComponent size={22} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body1" sx={{ fontWeight: n.isRead ? 400 : 600 }}>
-                            {n.title}
-                          </Typography>
-                        }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" sx={{ mb: 0.5 }}>
-                              {n.message}
+                    <ListItem disablePadding>
+                      <ListItemButton
+                        onClick={() => { if (!n.isRead) markRead.mutate(n.id); }}
+                        sx={{
+                          py: 2,
+                          px: 3,
+                          cursor: 'pointer',
+                          backgroundColor: n.isRead ? 'transparent' : (t) => alpha(t.palette.primary.main, 0.04),
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 44, color: iconColor }}>
+                          <IconComponent size={22} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography variant="body1" sx={{ fontWeight: n.isRead ? 400 : 600 }}>
+                              {n.title}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {new Date(n.createdAt).toLocaleString()}
-                            </Typography>
-                          </Box>
-                        }
-                      />
+                          }
+                          secondary={
+                            <Box>
+                              <Typography variant="body2" sx={{ mb: 0.5 }}>
+                                {n.body}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {new Date(n.createdAt).toLocaleString()}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      </ListItemButton>
                     </ListItem>
                     {idx < notifications.length - 1 && <Divider />}
                   </Box>
@@ -116,6 +167,18 @@ export function NotificationsPage() {
               })}
             </List>
           </CardContent>
+          <TablePagination
+            component="div"
+            count={totalCount}
+            page={page}
+            onPageChange={(_, p) => setPage(p)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[10, 20, 50]}
+          />
         </Card>
       )}
     </Box>

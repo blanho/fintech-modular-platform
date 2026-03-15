@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,28 +11,41 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TablePagination from '@mui/material/TablePagination';
 import Chip from '@mui/material/Chip';
-import { auditApi } from '../api/auditApi';
-import type { AuditEntry } from '@/shared/types';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import { useAuditLog } from '../hooks/useAudit';
+import type { ActionType } from '@/shared/types';
 
-const mockAudit: AuditEntry[] = [
-  { id: '1', userId: 'u1', action: 'Wallet.Created', entityType: 'Wallet', entityId: 'w1', details: 'Created Main Account', ipAddress: '192.168.1.1', timestamp: '2026-03-14T10:00:00Z' },
-  { id: '2', userId: 'u1', action: 'Transaction.Deposit', entityType: 'Transaction', entityId: 't1', details: 'Deposited $5,000', ipAddress: '192.168.1.1', timestamp: '2026-03-14T10:30:00Z' },
-  { id: '3', userId: 'u1', action: 'User.Login', entityType: 'User', entityId: 'u1', details: 'Login from Chrome', ipAddress: '192.168.1.1', timestamp: '2026-03-14T09:00:00Z' },
-  { id: '4', userId: 'u2', action: 'Transaction.Transfer', entityType: 'Transaction', entityId: 't2', details: 'Transfer $1,200 to Savings', ipAddress: '10.0.0.5', timestamp: '2026-03-13T14:20:00Z' },
-  { id: '5', userId: 'u1', action: 'Wallet.Updated', entityType: 'Wallet', entityId: 'w2', details: 'Updated wallet name', ipAddress: '192.168.1.1', timestamp: '2026-03-13T12:00:00Z' },
-];
+const actionTypeColors: Record<ActionType, 'success' | 'info' | 'warning' | 'error' | 'default' | 'primary' | 'secondary'> = {
+  Create: 'success',
+  Update: 'info',
+  Delete: 'error',
+  Execute: 'primary',
+  Query: 'default',
+  Login: 'secondary',
+  Logout: 'secondary',
+  Export: 'warning',
+};
 
 export function AuditPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [actionType, setActionType] = useState('');
+  const [resourceType, setResourceType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  const { data } = useQuery({
-    queryKey: ['audit', page + 1, rowsPerPage],
-    queryFn: () => auditApi.list(page + 1, rowsPerPage),
+  const { data, isLoading } = useAuditLog({
+    page: page + 1,
+    pageSize: rowsPerPage,
+    actionType: actionType || undefined,
+    resourceType: resourceType || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
-  const entries = data?.items ?? mockAudit;
-  const totalCount = data?.totalCount ?? mockAudit.length;
+  const entries = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
 
   return (
     <Box>
@@ -41,6 +54,50 @@ export function AuditPage() {
         <Typography variant="body2">Track all system activities and user actions</Typography>
       </Box>
 
+      <Card sx={{ mb: 3 }}>
+        <CardContent sx={{ display: 'flex', gap: 2, p: 2, '&:last-child': { pb: 2 }, flexWrap: 'wrap' }}>
+          <TextField
+            select
+            label="Action Type"
+            size="small"
+            value={actionType}
+            onChange={(e) => { setActionType(e.target.value); setPage(0); }}
+            sx={{ minWidth: 160 }}
+          >
+            <MenuItem value="">All Actions</MenuItem>
+            {(['Create', 'Update', 'Delete', 'Execute', 'Query', 'Login', 'Logout', 'Export'] as const).map((a) => (
+              <MenuItem key={a} value={a}>{a}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="Resource Type"
+            size="small"
+            value={resourceType}
+            onChange={(e) => { setResourceType(e.target.value); setPage(0); }}
+            placeholder="e.g. Wallet, Transaction"
+            sx={{ minWidth: 180 }}
+          />
+          <TextField
+            label="Start Date"
+            size="small"
+            type="date"
+            value={startDate}
+            onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: 160 }}
+          />
+          <TextField
+            label="End Date"
+            size="small"
+            type="date"
+            value={endDate}
+            onChange={(e) => { setEndDate(e.target.value); setPage(0); }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={{ minWidth: 160 }}
+          />
+        </CardContent>
+      </Card>
+
       <Card>
         <TableContainer>
           <Table>
@@ -48,12 +105,22 @@ export function AuditPage() {
               <TableRow>
                 <TableCell>Timestamp</TableCell>
                 <TableCell>Action</TableCell>
-                <TableCell>Entity</TableCell>
-                <TableCell>Details</TableCell>
+                <TableCell>Resource</TableCell>
+                <TableCell>Module</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Duration</TableCell>
+                <TableCell>Status</TableCell>
                 <TableCell>IP Address</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
+              {!isLoading && entries.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                    <Typography color="text.secondary">No audit entries found</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
               {entries.map((entry) => (
                 <TableRow key={entry.id} hover>
                   <TableCell>
@@ -65,18 +132,44 @@ export function AuditPage() {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Chip label={entry.action} size="small" variant="outlined" />
+                    <Chip
+                      label={entry.actionType}
+                      color={actionTypeColors[entry.actionType] ?? 'default'}
+                      size="small"
+                      variant="outlined"
+                    />
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">{entry.entityType}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                      {entry.entityId}
+                    <Typography variant="body2">{entry.resourceType}</Typography>
+                    {entry.resourceId && (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                        {entry.resourceId.slice(0, 8)}...
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{entry.module}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {entry.description ?? '-'}
                     </Typography>
                   </TableCell>
-                  <TableCell>{entry.details}</TableCell>
                   <TableCell>
                     <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                      {entry.ipAddress}
+                      {entry.durationMs}ms
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={entry.isSuccess ? 'Success' : 'Failed'}
+                      color={entry.isSuccess ? 'success' : 'error'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                      {entry.ipAddress ?? '-'}
                     </Typography>
                   </TableCell>
                 </TableRow>

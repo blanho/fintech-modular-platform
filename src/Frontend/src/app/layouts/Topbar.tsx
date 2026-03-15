@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
+import Chip from '@mui/material/Chip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
@@ -12,20 +13,20 @@ import { useState } from 'react';
 import { Menu as MenuIcon, Bell, LogOut, User, Settings } from 'lucide-react';
 import { useSidebarStore, useAuthStore } from '@/shared/stores';
 import { useNavigate } from 'react-router-dom';
+import { useLogout } from '@/features/auth/hooks/useAuth';
 import { DRAWER_WIDTH } from './Sidebar';
 
 export function Topbar() {
   const toggleSidebar = useSidebarStore((s) => s.toggle);
   const isSidebarOpen = useSidebarStore((s) => s.isOpen);
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const logoutMutation = useLogout();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleLogout = () => {
     setAnchorEl(null);
-    logout();
-    navigate('/login');
+    logoutMutation.mutate();
   };
 
   return (
@@ -97,12 +98,19 @@ export function Topbar() {
             <Typography variant="caption" color="text.secondary">
               {user?.email}
             </Typography>
+            {user?.roles && user.roles.length > 0 && (
+              <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                {user.roles.map((role) => (
+                  <Chip key={role} label={role} size="small" color="primary" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                ))}
+              </Box>
+            )}
           </Box>
           <Divider />
-          <MenuItem onClick={() => { setAnchorEl(null); }} sx={{ gap: 1.5, cursor: 'pointer' }}>
+          <MenuItem onClick={() => { setAnchorEl(null); navigate('/profile'); }} sx={{ gap: 1.5, cursor: 'pointer' }}>
             <User size={16} /> Profile
           </MenuItem>
-          <MenuItem onClick={() => { setAnchorEl(null); }} sx={{ gap: 1.5, cursor: 'pointer' }}>
+          <MenuItem onClick={() => { setAnchorEl(null); navigate('/settings'); }} sx={{ gap: 1.5, cursor: 'pointer' }}>
             <Settings size={16} /> Settings
           </MenuItem>
           <Divider />

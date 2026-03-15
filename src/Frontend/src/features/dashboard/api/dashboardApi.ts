@@ -1,6 +1,6 @@
 import { api } from '@/shared/api';
-import type { DashboardStats } from '@/shared/types';
+import type { DashboardStatsResponse } from '@/shared/types';
 
 export const dashboardApi = {
-  getStats: () => api.get<DashboardStats>('/dashboard/stats').then((r) => r.data),
+  getStats: () => api.get<DashboardStatsResponse>('/statistics/dashboard').then((r) => r.data),
 };
