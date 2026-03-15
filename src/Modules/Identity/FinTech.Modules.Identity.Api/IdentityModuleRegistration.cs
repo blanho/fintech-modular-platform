@@ -1,10 +1,12 @@
 using FinTech.BuildingBlocks.Application.Contracts;
 using FinTech.Modules.Identity.Application.Interfaces;
 using FinTech.Modules.Identity.Application.Services;
+using FinTech.Modules.Identity.Infrastructure.Authorization;
 using FinTech.Modules.Identity.Infrastructure.Persistence;
 using FinTech.Modules.Identity.Infrastructure.Persistence.Repositories;
 using FinTech.Modules.Identity.Infrastructure.Services;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,11 +30,17 @@ public static class IdentityModuleRegistration
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         services.AddScoped<IIdentityService, IdentityService>();
+
+        services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        services.AddHostedService<RoleSeedingService>();
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(IdentityModuleRegistration).Assembly));

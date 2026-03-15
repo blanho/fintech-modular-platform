@@ -3,6 +3,7 @@ using FinTech.BuildingBlocks.EventBus;
 using FinTech.BuildingBlocks.EventBus.Events;
 using FinTech.Modules.Identity.Application.Interfaces;
 using FinTech.Modules.Identity.Domain.Entities;
+using FinTech.Modules.Identity.Domain.Enums;
 using FinTech.Modules.Identity.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -14,17 +15,20 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<RegisterCommandHandler> _logger;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IRoleRepository _roleRepository;
     private readonly IUserRepository _userRepository;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IEventPublisher eventPublisher,
+        IRoleRepository roleRepository,
         ILogger<RegisterCommandHandler> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _eventPublisher = eventPublisher;
+        _roleRepository = roleRepository;
         _logger = logger;
     }
 
@@ -54,6 +58,15 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         var user = userResult.Value!;
 
         await _userRepository.AddAsync(user, cancellationToken);
+
+        var defaultRole = await _roleRepository.GetByTypeAsync(RoleType.User, cancellationToken);
+        if (defaultRole is not null)
+        {
+            var userRole = UserRole.Create(user.Id, defaultRole.Id, null);
+            await _roleRepository.AddUserRoleAsync(userRole, cancellationToken);
+            _logger.LogInformation("Assigned default User role to user {UserId}", user.Id);
+        }
+
         await _userRepository.SaveChangesAsync(cancellationToken);
 
         try

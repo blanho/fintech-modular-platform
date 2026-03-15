@@ -8,5 +8,7 @@ public interface IJwtTokenGenerator
 
     string GenerateAccessToken(User user);
 
+    Task<string> GenerateAccessTokenAsync(User user, CancellationToken ct = default);
+
     string GenerateRefreshToken();
 }

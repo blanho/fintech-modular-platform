@@ -12,10 +12,12 @@ namespace FinTech.Modules.Identity.Infrastructure.Services;
 public sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly IConfiguration _configuration;
+    private readonly IRoleRepository _roleRepository;
 
-    public JwtTokenGenerator(IConfiguration configuration)
+    public JwtTokenGenerator(IConfiguration configuration, IRoleRepository roleRepository)
     {
         _configuration = configuration;
+        _roleRepository = roleRepository;
         RefreshTokenValidity = TimeSpan.FromDays(
             configuration.GetValue("Jwt:RefreshTokenExpirationDays", 7));
     }
@@ -23,6 +25,11 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
     public TimeSpan RefreshTokenValidity { get; }
 
     public string GenerateAccessToken(User user)
+    {
+        return GenerateAccessTokenAsync(user).GetAwaiter().GetResult();
+    }
+
+    public async Task<string> GenerateAccessTokenAsync(User user, CancellationToken ct = default)
     {
         var secret = _configuration["Jwt:Secret"]
                      ?? throw new InvalidOperationException("JWT secret is not configured");
@@ -35,14 +42,25 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.Value.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.Value.ToString()),
-            new Claim(ClaimTypes.Email, user.Email.Value)
-        }.Concat(GetOptionalClaims(user)).ToArray();
+            new(JwtRegisteredClaimNames.Sub, user.Id.Value.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email.Value),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.Value.ToString()),
+            new(ClaimTypes.Email, user.Email.Value)
+        };
+
+        claims.AddRange(GetOptionalClaims(user));
+
+        var permissions = await _roleRepository.GetUserPermissionsAsync(user.Id, ct);
+        var userRoles = await _roleRepository.GetUserRolesAsync(user.Id, ct);
+
+        foreach (var userRole in userRoles)
+            claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
+
+        foreach (var permission in permissions)
+            claims.Add(new Claim("permission", permission));
 
         var token = new JwtSecurityToken(
             issuer,

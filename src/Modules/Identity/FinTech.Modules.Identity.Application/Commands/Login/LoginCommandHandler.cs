@@ -38,7 +38,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<L
         if (user.Status != UserStatus.Active)
             return Result<LoginResponse>.Failure(Error.Forbidden("User account is not active"));
 
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
+        var accessToken = await _jwtTokenGenerator.GenerateAccessTokenAsync(user, cancellationToken);
         var refreshTokenValue = _jwtTokenGenerator.GenerateRefreshToken();
 
         var refreshToken = Domain.Entities.RefreshToken.Create(
