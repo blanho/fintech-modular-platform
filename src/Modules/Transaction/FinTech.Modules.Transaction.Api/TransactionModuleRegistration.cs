@@ -1,4 +1,8 @@
-﻿using FinTech.Modules.Transaction.Application.Interfaces;
+﻿using FinTech.BuildingBlocks.Application.Contracts;
+using FinTech.BuildingBlocks.Infrastructure.Resilience;
+using FinTech.BuildingBlocks.Infrastructure.Security;
+using FinTech.Modules.Transaction.Application.Interfaces;
+using FinTech.Modules.Transaction.Infrastructure.ExternalServices;
 using FinTech.Modules.Transaction.Infrastructure.Persistence;
 using FinTech.Modules.Transaction.Infrastructure.Persistence.Repositories;
 using FluentValidation;
@@ -20,6 +24,15 @@ public static class TransactionModuleRegistration
                 npgsql => npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "transaction")));
 
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+        services.AddHttpClient<IPaymentGateway, StripePaymentGateway>(client =>
+        {
+            client.BaseAddress = new Uri(configuration["PaymentGateway:BaseUrl"] ?? "https://api.stripe.com");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        })
+        .AddStandardResilience("PaymentGateway");
+
+        services.AddSingleton<IWebhookVerifier, HmacWebhookVerifier>();
 
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(TransactionModuleRegistration).Assembly));
